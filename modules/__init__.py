@@ -1,1 +1,1 @@
-__all__ = ["join", "part", "topic", "privmsg", "nick", "user", "who", "names", "oper", "mode", "wallops"]
+__all__ = ["join", "part", "topic", "privmsg", "nick", "user", "who", "names", "oper", "mode", "wallops", "kill"]
