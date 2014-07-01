@@ -1,5 +1,6 @@
 #
 # channel.py
+# Copyright (C) 2014 Quytelda Gaiwin
 #
 
 import symbols

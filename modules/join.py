@@ -1,5 +1,6 @@
 #
 # join.py
+# Copyright (C) 2014 Quytelda Gaiwin
 #
 
 from channel import IRCChannel

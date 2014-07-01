@@ -1,5 +1,6 @@
 #
 # server.py
+# Copyright (C) 2014 Quytelda Gaiwin
 #
 
 import sys

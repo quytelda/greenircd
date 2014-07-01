@@ -1,5 +1,6 @@
 #
 # connection.py
+# Connection (C) 2014 Quytelda Gaiwin
 #
 from twisted.internet import protocol
 from twisted.protocols.basic import LineReceiver
