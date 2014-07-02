@@ -87,14 +87,18 @@ def user_mode(srv, ctcn, user, params):
 	tmp_stack = user.mode_stack
 	
 	for flag in add_flags:
-		if flag in symbols.oper_modes: continue
-		user.add_mode(flag)
+		# operator modes can't be added with the MODE command
+		if symbols.user_modes[flag] >= symbols.user_modes['o']: continue
+		
+		# apply the mask to the channel mode
+		user.mode_stack |= symbols.user_modes[flag]
 	
 	net_mode += '+' + symbols.parse_stack(user.mode_stack ^ tmp_stack, symbols.user_modes)
 	tmp_stack = user.mode_stack
 	
 	for flag in rem_flags:
-		user.rem_mode(flag)
+		# apply the mask to the channel mode
+		user.mode_stack ^= symbols.user_modes[flag]
 		
 	net_mode += '-' + symbols.parse_stack(user.mode_stack ^ tmp_stack, symbols.user_modes)
 		

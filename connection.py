@@ -34,21 +34,8 @@ class IRCConnection(LineReceiver):
 			return "%s!%s@%s" % (self.nick, self.uid, self.transport.getPeer().host)
 		else:
 			return "server.host"
-			
-	def add_mode(self, flag, param = None):
-		mask = symbols.user_modes[flag] # get the corresponding mask
-
-		# apply the mask to the channel mode
-		self.mode_stack |= mask
-		print "* mode_stack changed to ", self.mode_stack
-		
-	def rem_mode(self, flag, param = None):
-		mask = symbols.user_modes[flag] # get the corresponding mask
-
-		# apply the mask to the channel mode
-		self.mode_stack ^= mask
-		print "* mode_stack changed to ", self.mode_stack
-		
+	
+	# convenience method to test if a user has a mode flag
 	def has_mode(self, flag):
 		return (self.mode_stack & symbols.user_modes[flag]) > 0
 
