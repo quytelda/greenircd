@@ -12,12 +12,12 @@ chan_status_modes = {
 }
 
 status_modes = {
-	2**5 : {'prefix' : '~', 'modechar' : 'q'},
-	2**4 : {'prefix' : '&', 'modechar' : 'a'},
-	2**3 : {'prefix' : '@', 'modechar' : 'o'},
-	2**2 : {'prefix' : '%', 'modechar' : 'h'},
+	2**1 : {'prefix' : '', 'modechar' : ''},
 	2**1 : {'prefix' : '+', 'modechar' : 'v'},
-	2**0 : {'prefix' : '', 'modechar' : ''}
+	2**2 : {'prefix' : '%', 'modechar' : 'h'},
+	2**3 : {'prefix' : '@', 'modechar' : 'o'},
+	2**4 : {'prefix' : '&', 'modechar' : 'a'},
+	2**5 : {'prefix' : '~', 'modechar' : 'q'}
 }
 
 numeric = {
@@ -31,6 +31,8 @@ chan_modes = {
 	'l' : 2**2,
 	'o' : 0,
 	'v' : 0,
+	'h' : 0,
+	'a' : 0,
 	'q' : 0
 }
 

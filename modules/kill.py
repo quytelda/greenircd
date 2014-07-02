@@ -25,12 +25,13 @@ def handle_event(srv, ctcn, params):
 		srv.send_msg(ctcn, "401 %s :%s is not a known nick or channel!" % (target, target))
 		return
 	
+	client = srv.clients[target]
+	
 	print "* executing KILL command on", target
 	
 	# send the kill notice
-	srv.announce(ctcn, "KILL %s :%s" % (target, reason), ctcn.get_hostmask())
+	# TODO what is 'xxx' supposed to be?
+	srv.send_msg(client, "KILL %s :xxx (%s)" % (target, reason), ctcn.get_hostmask())
 	
 	# apply the action
-	client = srv.clients[target]
-	client.loseConnection()
-	#srv.unregister_connection(client)
+	client.kill()

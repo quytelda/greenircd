@@ -39,7 +39,7 @@ def channel_mode(srv, ctcn, channel, params):
 		return
 	
 	# if the user is not a channel operator, we can go no further
-	if channel.members[ctcn] < 3 and not ctcn.has_mode('o'): return
+	if channel.members[ctcn] < 2**3 and not ctcn.has_mode('o'): return
 	
 	# if there more params (a list of flags),
 	# we will parse them, and send to the channels
@@ -52,12 +52,14 @@ def channel_mode(srv, ctcn, channel, params):
 	tmp_stack = channel.mode_stack
 	
 	for flag in add_flags:
+		if not flag in symbols.chan_modes: continue
 		channel.add_mode(flag, params[1:])
 	
 	net_mode += '+' + symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
 	tmp_stack = channel.mode_stack	
 	
 	for flag in rem_flags:
+		if not flag in symbols.chan_modes: return
 		channel.rem_mode(flag, params[1:])
 		
 	net_mode += '-' + symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)

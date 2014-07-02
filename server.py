@@ -45,12 +45,19 @@ class IRCServer:
 	def register_client(self, ctcn):
 		self.clients[ctcn.nick] = ctcn
 		
+		#self.send_msg(ctcn, 'CAP * LS :account-notify away-notify multi-prefix userhost-in-names')
+		
 		print "* registered client"
+		
+		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
+		chan_prefixes = [symbols.status_modes[x]['prefix'] for x in sorted(symbols.status_modes, reverse=True)]
 		
 		# send welcome info
 		self.send_msg(ctcn, '001 %s :Welcome to %s, %s' % (ctcn.nick, self.name, ctcn.get_hostmask()))
 		self.send_msg(ctcn, '002 %s :You host is %s, running GreenIRCDv0.1' % (ctcn.nick, self.name))
-		self.send_msg(ctcn, '004 %s %s %s %s %s' % (ctcn.nick, self.name, self.version, symbols.user_modes, symbols.chan_modes))
+		self.send_msg(ctcn, '004 %s %s %s %s %s' % (ctcn.nick, self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
+
+		self.send_msg(ctcn, '005 %s PREFIX=(%s)%s :are supported' % (ctcn.nick, ''.join(chan_modes), ''.join(chan_prefixes)))
 		
 		# set initial client state
 		# set modes

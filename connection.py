@@ -26,8 +26,8 @@ class IRCConnection(LineReceiver):
 	def lineReceived(self, data):
 		self.server.handle_message(self, data)
 		
-	def register():
-		return
+	def kill(self):
+		self.transport.loseConnection()
 
 	def get_hostmask(self):
 		if hasattr(self, 'nick') and hasattr(self, 'uid'):

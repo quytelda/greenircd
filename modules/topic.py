@@ -14,7 +14,7 @@ def handle_event(srv, ctcn, params):
 		topic = params[1]
 		
 		# if the channel is +t, only ops can set the topic
-		if channel.has_mode('t') and channel.members[ctcn] < 3: return
+		if channel.has_mode('t') and channel.members[ctcn] < 2**3: return
 		
 		# apply the change
 		channel.topic = topic
