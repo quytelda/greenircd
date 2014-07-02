@@ -47,7 +47,7 @@ def handle_event(srv, user, params):
 	
 	# apply the modes listed in the config file
 	for flag in oper_entry['flags']:
-		if flag in symbols.user_modes
+		if flag in symbols.user_modes:
 			user.mode_stack |= symbols.user_modes[flag]
 		
 	net_modes = "+" + symbols.parse_stack(user.mode_stack ^ orig_stack, symbols.user_modes)
