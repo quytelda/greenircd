@@ -40,14 +40,13 @@ class IRCServer:
 			# add the module's hook to the dictionary
 			mod = sys.modules['modules.%s' % module]
 			
+			if not hasattr(mod, '__command__'):
+				print "** FAIL: unable to load '%s' because __command__ is not set." % module
+			
 			self.hooks[mod.__command__] = mod.handle_event
 
 	def register_client(self, ctcn):
 		self.clients[ctcn.nick] = ctcn
-		
-		#self.send_msg(ctcn, 'CAP * LS :account-notify away-notify multi-prefix userhost-in-names')
-		
-		print "* registered client"
 		
 		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
 		chan_prefixes = [symbols.status_modes[x]['prefix'] for x in sorted(symbols.status_modes, reverse=True)]
@@ -56,7 +55,6 @@ class IRCServer:
 		self.send_msg(ctcn, '001 %s :Welcome to %s, %s' % (ctcn.nick, self.name, ctcn.get_hostmask()))
 		self.send_msg(ctcn, '002 %s :You host is %s, running GreenIRCDv0.1' % (ctcn.nick, self.name))
 		self.send_msg(ctcn, '004 %s %s %s %s %s' % (ctcn.nick, self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
-
 		self.send_msg(ctcn, '005 %s PREFIX=(%s)%s :are supported' % (ctcn.nick, ''.join(chan_modes), ''.join(chan_prefixes)))
 		
 		# set initial client state
@@ -98,7 +96,7 @@ class IRCServer:
 		ctcn.transport.write(':%s %s\r\n' % (self.name if (prefix == None) else prefix, msg))
 	
 	def send_numeric(self, ctcn, numeric, msg, prefix = None):
-		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg, prefix))
+		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg), prefix)
 		
 	def announce(self, ctcn, msg, prefix = None, exclude = False):
 		# send this message to every client we have registered

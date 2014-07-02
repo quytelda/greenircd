@@ -11,7 +11,9 @@ __command__ = 'MODE'
 # (:prefix) MODE <target> (+/-)<flags> <params>...
 
 def handle_event(srv, ctcn, params):
-	if len(params) < 1: return
+	if len(params) < 1:
+		srv.send_msg(user, "461 %s MODE :MODE takes at least 1 parameter!" % user.nick)
+		return
 
 	target = params[0]
 
@@ -63,13 +65,11 @@ def channel_mode(srv, ctcn, channel, params):
 	srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, ' '.join(params)), ctcn.get_hostmask())
 		
 def user_mode(srv, ctcn, user, params):
-	print "* user mode command for", user.nick, "with params", params
-
 	# if only a target is provided,
 	# the command is treated as a query
 	if (len(params) < 1) or (params[0] == ''):
-		print "* user mode query for", user.nick
-		srv.send_msg(ctcn, '221 %s %s' % (user.nick, '+w'))
+		modestring = symbols.parse_stack(user.mode_stack, symbols.user_modes)
+		srv.send_msg(ctcn, '221 %s +%s' % (user.nick, modestring))
 		
 		# after we've sent the query results, we are done
 		return
