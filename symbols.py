@@ -34,8 +34,6 @@ user_modes = {
 	'o' : 2**3
 }
 
-oper_modes = 'o'
-
 def parse_stack(stack, modes):
 	mode_str = ''
 	for mode in modes:

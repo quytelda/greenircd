@@ -26,23 +26,32 @@ def handle_event(srv, user, params):
 	if not os.path.isfile('opers.conf'):
 		print "* missing file opers.conf"
 		return
-		
+	
+	# find the matching oper entry
+	oper_entry = None
 	pwdfile = open('opers.conf', 'r')
 	for line in pwdfile:
 		try:
 			entry = json.loads(line)
-			success = (entry['user'] == username) and (entry['hash'] == pwdhash)
-			if success: break
+			if (entry['user'] == username) and (entry['hash'] == pwdhash):
+				oper_entry = entry
+				break
 		except:
 			print "* Invalid oper entry:", line
-			continue
+			return
 	else: # no matching entries were found
 		srv.send_msg(user, "464 %s :Invalid OPER login credentials; this will be reported." % user.nick)
 		return
+		
+	orig_stack = user.mode_stack
 	
-	# add the appropriate modes
-	for flag in symbols.oper_modes:
-		user.mode_stack |= symbols.user_modes[flag]
+	# apply the modes listed in the config file
+	for flag in oper_entry['flags']:
+		if flag in symbols.user_modes
+			user.mode_stack |= symbols.user_modes[flag]
+		
+	net_modes = "+" + symbols.parse_stack(user.mode_stack ^ orig_stack, symbols.user_modes)
 	
-	srv.send_msg(user, 'MODE %s :+%s' % (user.nick, symbols.oper_modes), user.nick)
+	# send the confirmation messages to the user
+	srv.send_msg(user, 'MODE %s :+%s' % (user.nick, net_modes))
 	srv.send_msg(user, '381 %s :%s' % (user.nick, '*** Logged in as IRC Operator'))
