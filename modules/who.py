@@ -10,16 +10,20 @@ __command__ = 'WHO'
 def handle_event(srv, ctcn, params):
 	# if there are no params, this is a global query
 	# TODO: implement globals
-	if len(params) < 1: return
+	if len(params) < 1:
+		for chan in srv.channels:
+			channel_who(srv, ctcn, srv.channels[chan])
+	elif params[0] in srv.channels:
+		channel_who(srv, ctcn, srv.channels[params[0]])
 
+def channel_who(srv, ctcn, channel, params = []):
 	# if there is one query, it is probably by a channel
-	target = params[0]
-	channel = srv.channels[target]
 	
 	for member in channel.members:
 		chan_status = channel.get_status(member)
-		status = 'H' + symbols.status_modes[chan_status]['prefix'];
+		status = 'H' + symbols.status_modes[chan_status]['prefix']
+		if member.has_mode('o'): status += '*'
 
-		srv.send_msg(ctcn, '352 %s %s %s %s %s %s %s :0 %s' % (ctcn.nick, target, ctcn.uid, ctcn.transport.getPeer().host, srv.name, ctcn.nick, status, 'REALNAME'))
+		srv.send_msg(ctcn, '352 %s %s %s %s %s %s %s :0 %s' % (ctcn.nick, channel.name, ctcn.uid, ctcn.transport.getPeer().host, srv.name, ctcn.nick, status, 'REALNAME'))
 
-	srv.send_msg(ctcn, '315 %s %s :%s' % (ctcn.nick, target, "End of /WHO List"))
+	srv.send_msg(ctcn, '315 %s %s :%s' % (ctcn.nick, channel.name, "End of /WHO List"))

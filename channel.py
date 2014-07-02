@@ -21,7 +21,7 @@ class IRCChannel:
 	
 	def join(self, user):
 		# the first user gets the highest mode available (+q, owner)
-		status = symbols.status_modes.keys()[0] if (len(self.members) == 0) else 0
+		status = 2**5 if (len(self.members) == 0) else 1
 		self.members[user] = status
 	
 	def part(self, user):
@@ -40,7 +40,7 @@ class IRCChannel:
 			
 			# look up the mode
 			for status in symbols.status_modes.items():
-				if status[1]['modechar'] == flag:
+				if (status[1]['modechar'] == flag):
 					self.members[self.server.clients[params[0]]] |= status[0]
 					
 		# apply the mask to the channel mode
@@ -52,11 +52,10 @@ class IRCChannel:
 		# deal with status modes
 		if (mask == 0) and (len(params) > 0) and (params[0] in self.server.clients):
 			target = params[0]
-			print "setting-%s on %s in %s" % (flag, target, self.name)
 			
 			# look up the mode
 			for status in symbols.status_modes.items():
-				if status[1]['modechar'] == flag:
+				if (status[1]['modechar'] == flag):
 					self.members[self.server.clients[params[0]]] ^= status[0]
 		
 		# apply the mask to the channel mode
@@ -69,11 +68,10 @@ class IRCChannel:
 		return (self.mode_stack & symbols.chan_modes[flag]) > 0
 		
 	def get_status(self, user):
+		#print "* composite status is", self.members[user]
 		highest_status = 1
 		for mode in symbols.status_modes:
 			if (self.members[user] & mode) > highest_status: highest_status = mode
-		
-		print "* detected user had status", symbols.status_modes[highest_status]['prefix']
 		
 		return highest_status
 		

@@ -14,7 +14,6 @@ def handle_event(srv, ctcn, params):
 	if len(params) < 1: return
 
 	target = params[0]
-	print "* received MODE command on", target
 
 	# the MODE command is handled separately for users and channels
 	# so, determine what type of target we are dealing with
@@ -26,12 +25,9 @@ def handle_event(srv, ctcn, params):
 		srv.send_msg(ctcn, "401 %s :%s is not a known nick or channel!" % (target, target))
 
 def channel_mode(srv, ctcn, channel, params):
-	print "* channel mode command for", channel.name, "with params", params
-
 	# if only a target is provided,
 	# the command is treated as a query
 	if (len(params) < 1) or (params[0] == ''):
-		print "* channel mode query for", channel.name
 		mode_str = symbols.parse_stack(channel.mode_stack, symbols.chan_modes)
 		srv.send_msg(ctcn, '324 %s %s +%s' % (ctcn.nick, channel.name, mode_str))
 		

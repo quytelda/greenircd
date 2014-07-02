@@ -2,17 +2,8 @@
 # symbols.py
 #
 
-chan_status_modes = {
-	5 : {'prefix' : '~', 'modechar' : 'q'},
-	4 : {'prefix' : '&', 'modechar' : 'a'},
-	3 : {'prefix' : '@', 'modechar' : 'o'},
-	2 : {'prefix' : '%', 'modechar' : 'h'},
-	1 : {'prefix' : '+', 'modechar' : 'v'},
-	0 : {'prefix' : '', 'modechar' : ''}
-}
-
 status_modes = {
-	2**1 : {'prefix' : '', 'modechar' : ''},
+	2**0 : {'prefix' : '', 'modechar' : ''},
 	2**1 : {'prefix' : '+', 'modechar' : 'v'},
 	2**2 : {'prefix' : '%', 'modechar' : 'h'},
 	2**3 : {'prefix' : '@', 'modechar' : 'o'},
