@@ -40,8 +40,9 @@ def handle_event(srv, user, params):
 		srv.send_msg(user, "464 %s :Invalid OPER login credentials; this will be reported." % user.nick)
 		return
 	
-	for m in symbols.oper_modes:
-		user.add_mode(m)
+	# add the appropriate modes
+	for flag in symbols.oper_modes:
+		user.mode_stack |= symbols.user_modes[flag]
 	
 	srv.send_msg(user, 'MODE %s :+%s' % (user.nick, symbols.oper_modes), user.nick)
 	srv.send_msg(user, '381 %s :%s' % (user.nick, '*** Logged in as IRC Operator'))
