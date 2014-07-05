@@ -31,15 +31,20 @@ def handle_event(srv, ctcn, params):
 		return
 	user = srv.clients[nick]
 	
+	# can't kick users who are protected (have +q usermode)
+	if user.has_mode('q'):
+		srv.send_msg(ctcn, "481 %s :Can't kick protected users." % ctcn.nick)
+		return
+	
 	# user must already be in the channel
 	if not user in channel.members:
-		srv.send_msg(user, "482 %s %s :User is not in channel." % (ctcn.nick, target))
+		srv.send_msg(ctcn, "482 %s %s :User is not in channel." % (ctcn.nick, target))
 		return
 	user_status = channel.members[user]
 	
 	# only channel operators can kick
 	if (not ctcn in channel.members) or (channel.members[ctcn] < 2**3 and (not user.has_mode('o'))):
-		srv.send_msg(user, "482 %s %s :You must be a channel operator to use KICK." % (ctcn.nick, target))
+		srv.send_msg(ctcn, "482 %s %s :You must be a channel operator to use KICK." % (ctcn.nick, target))
 		return
 
 	# can't kick someone with higher access level

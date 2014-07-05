@@ -34,7 +34,9 @@ user_modes = {
 	'x' : 2**1,
 	'w' : 2**2,
 	'o' : 2**3,
-	'W' : 2**4
+	'W' : 2**4,
+	'q' : 2**5,
+	'a' : 2**10
 }
 
 def parse_stack(stack, modes):

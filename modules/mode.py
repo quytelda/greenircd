@@ -125,7 +125,13 @@ def user_mode(srv, ctcn, user, params):
 	
 	for flag in add_flags:
 		# operator modes can't be added with the MODE command
-		if (not flag in symbols.user_modes) or (symbols.user_modes[flag] >= symbols.user_modes['o']): continue
+		if (not flag in symbols.user_modes): continue
+		
+		# modes above XXX can't be added unless you already have greater privileges.
+		if (symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag]):
+			srv.send_msg(user, "481 %s :You don't have the correct priveleges to use this mode." % ctcn.nick)
+			print "*** %d : %d" % (user.mode_stack, symbols.user_modes[flag])
+			continue
 		
 		# apply the mask to the channel mode
 		user.mode_stack |= symbols.user_modes[flag]
@@ -134,6 +140,7 @@ def user_mode(srv, ctcn, user, params):
 	tmp_stack = user.mode_stack
 	
 	for flag in rem_flags:
+		if (not flag in symbols.user_modes): continue
 		# apply the mask to the channel mode
 		user.mode_stack ^= symbols.user_modes[flag]
 		
