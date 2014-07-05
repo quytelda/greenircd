@@ -46,23 +46,60 @@ def channel_mode(srv, ctcn, channel, params):
 	rem_flags = re.sub('\+[a-zA-Z]*', '', flags)[1:]
 	
 	# net_mode accumulates the actual changes applied to the mode
-	net_mode = ''
+	net_add_flags = '+'
+	net_rem_flags = '-'
 	tmp_stack = channel.mode_stack
-	
+
+	# add positive mode flags
 	for flag in add_flags:
-		if not flag in symbols.chan_modes: continue
-		channel.add_mode(flag, params[1:])
-	
-	net_mode += '+' + symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
-	tmp_stack = channel.mode_stack	
-	
+		if (not flag in symbols.chan_modes): continue
+		mask = symbols.chan_modes[flag] # get the corresponding mask
+		
+		# deal with status modes
+		# <BEGIN STATUS MODES>
+		# (all status modes have a mask of zero, and taking one parameter)
+		if (mask == 0) and (len(params) > 1) and (params[1] in srv.clients):
+			target = params[1]
+			
+			# look up the mode
+			for status in symbols.status_modes.items():
+				if (status[1]['modechar'] == flag) and ((channel.members[ctcn] >= status[0]) or (ctcn.has_mode('o'))):
+					channel.members[srv.clients[params[1]]] |= status[0]
+					srv.announce_channel(ctcn, channel, 'MODE %s +%s %s' % (channel.name, flag, params[1]), ctcn.get_hostmask())
+					del params[1]
+		# </END STATUS MODES>
+		
+		# add the mask to the channel mode
+		channel.mode_stack |= mask
+
+	# calculate positive mode change
+	net_add_flags += symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
+	tmp_stack = channel.mode_stack
+
+	# remove negative mode flags
 	for flag in rem_flags:
-		if not flag in symbols.chan_modes: return
-		channel.rem_mode(flag, params[1:])
-		
-	net_mode += '-' + symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
-		
-	srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, ' '.join(params)), ctcn.get_hostmask())
+		if not flag in symbols.chan_modes: continue
+		mask = symbols.chan_modes[flag] # get the corresponding mask
+
+		# deal with status modes
+		if (mask == 0) and (len(params) > 1) and (params[1] in srv.clients):
+			target = params[1]
+
+			# look up the mode
+			for status in symbols.status_modes.items():
+				if (status[1]['modechar'] == flag) and (channel.members[ctcn] >= status[0] or (ctcn.has_mode('o'))):
+					channel.members[srv.clients[params[1]]] ^= status[0]
+					srv.announce_channel(ctcn, channel, 'MODE %s -%s %s' % (channel.name, flag, params[1]), ctcn.get_hostmask())
+					del params[1]
+					
+		# subtract the mask from the channel mode
+		channel.mode_stack ^= mask
+
+	# calculate negative mode changes
+	net_rem_flags += symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
+	net_mode = (net_add_flags if (net_add_flags) else '') + (net_rem_flags if (net_rem_flags) else '')
+
+	srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, net_mode), ctcn.get_hostmask())
 		
 def user_mode(srv, ctcn, user, params):
 	# if only a target is provided,
@@ -88,7 +125,7 @@ def user_mode(srv, ctcn, user, params):
 	
 	for flag in add_flags:
 		# operator modes can't be added with the MODE command
-		if symbols.user_modes[flag] >= symbols.user_modes['o']: continue
+		if (not flag in symbols.user_modes) or (symbols.user_modes[flag] >= symbols.user_modes['o']): continue
 		
 		# apply the mask to the channel mode
 		user.mode_stack |= symbols.user_modes[flag]

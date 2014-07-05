@@ -5,6 +5,8 @@
 
 import symbols
 
+import modules.mode
+
 # 
 # IRCChannel
 # This class represents an IRC channel
@@ -25,41 +27,22 @@ class IRCChannel:
 		self.members[user] = status
 	
 	def part(self, user):
+		# if the channel has the persistant op (+P) flag set
+		# and this is the last op, op the first member
+		if self.has_mode('P') and (len(self.members) > 1) and any(self.members[member] < 2**3 for member in self.members):
+			new_op = None
+			# find the best candidate to receive ops
+			for member in self.members:
+				if (user != member) and (new_op == None or self.members[new_op] < self.members[member]):
+					new_op = member
+
+			# generate mode change event
+			modules.mode.handle_event(self.server, user, [self.name, '+o', new_op.nick])
+	
 		del self.members[user]
 		
 	def quit(self, user):
 		del self.members[user]
-
-	def add_mode(self, flag, params = []):
-		mask = symbols.chan_modes[flag] # get the corresponding mask
-		
-		# deal with status modes
-		if (mask == 0) and (len(params) > 0) and (params[0] in self.server.clients):
-			target = params[0]
-			print "setting +%s on %s in %s" % (flag, target, self.name)
-			
-			# look up the mode
-			for status in symbols.status_modes.items():
-				if (status[1]['modechar'] == flag):
-					self.members[self.server.clients[params[0]]] |= status[0]
-					
-		# apply the mask to the channel mode
-		self.mode_stack |= mask
-		
-	def rem_mode(self, flag, params = None):
-		mask = symbols.chan_modes[flag] # get the corresponding mask
-
-		# deal with status modes
-		if (mask == 0) and (len(params) > 0) and (params[0] in self.server.clients):
-			target = params[0]
-			
-			# look up the mode
-			for status in symbols.status_modes.items():
-				if (status[1]['modechar'] == flag):
-					self.members[self.server.clients[params[0]]] ^= status[0]
-		
-		# apply the mask to the channel mode
-		self.mode_stack ^= mask
 
 	def topic(self, caller, new_topic):
 		self.topic = new_topic

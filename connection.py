@@ -17,6 +17,7 @@ class IRCConnection(LineReceiver):
 	# TODO: hostname resolution	
 	def connectionMade(self):
 		peer_address = self.transport.getPeer().host
+		#print self.transport.getPeer().getDestination().getHandle().getpeername()
 		self.server.send_msg(self, 'NOTICE AUTH :*** Connection established!')
 	
 	def connectionLost(self, reason):
@@ -26,7 +27,7 @@ class IRCConnection(LineReceiver):
 	def lineReceived(self, data):
 		self.server.handle_message(self, data)
 		
-	def kill(self):
+	def close(self):
 		self.transport.loseConnection()
 
 	def get_hostmask(self):

@@ -104,6 +104,11 @@ class IRCServer:
 			if (not exclude) or (ctcn != client) or (not client.nick in self.clients):
 				self.send_msg(client, msg, prefix)
 			
+	def announce_common(self, ctcn, msg, prefix = None, exclude = False):
+		for chan in self.channels:
+			if ctcn in self.channels[chan].members:
+				self.announce_channel(ctcn, self.channels[chan], msg, prefix, exclude)
+
 	def announce_channel(self, ctcn, channel, msg, prefix = None, exclude = False):
 		# send this message to all members of a channel
 		for user in channel.members:

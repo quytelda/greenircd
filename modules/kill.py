@@ -8,30 +8,28 @@ import symbols
 __command__ = 'KILL'
 
 def handle_event(srv, ctcn, params):
-	print "* KILL command used!"
-
-	if len(params) < 1: return
+	if len(params) < 1:
+		srv.send_msg(ctcn, "461 %s KILL :KILL takes at least 1 parameter!" % ctcn.nick)
+		return
 	
 	# only operators can use KILL
-	if not ctcn.has_mode('o'): return
-	
-	print "* received KILL"
+	if not ctcn.has_mode('o'):
+		srv.send_msg(ctcn, "481 %s :You must be an operator to use KILL." % ctcn.nick) 
+		return
 	
 	target = params[0]
-	reason = ' '.join(params[1:]) if (len(params) > 1) else 'Killed'
+	reason = params[1] if (len(params) > 1) else ctcn.nick
 	
 	# if the target doesn't exist, send a 401 and exit
 	if not target in srv.clients:
-		srv.send_msg(ctcn, "401 %s :%s is not a known nick or channel!" % (target, target))
+		srv.send_msg(ctcn, "401 %s :Nickname not in server database." % ctcn.nick)
 		return
 	
-	client = srv.clients[target]
+	user = srv.clients[target]
 	
-	print "* executing KILL command on", target
-	
-	# send the kill notice
+	# announce the kill notice
 	# TODO what is 'xxx' supposed to be?
-	srv.send_msg(client, "KILL %s :xxx (%s)" % (target, reason), ctcn.get_hostmask())
-	
+	srv.announce_common(ctcn, "KILL %s :xxx %s" % (user.nick, reason), ctcn.get_hostmask())
+
 	# apply the action
-	client.kill()
+	user.close()

@@ -11,7 +11,7 @@ def handle_event(srv, ctcn, params):
 		return
 
 	# users can only register once
-	if ctcn in srv.clients:
+	if ctcn.nick in srv.clients:
 		srv.send_msg(ctcn, "462 %s :You are already registered!" % ctcn.nick)
 
 	username = params[0]
