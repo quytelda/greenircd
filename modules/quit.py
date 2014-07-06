@@ -19,3 +19,6 @@ def handle_event(srv, ctcn, params):
 	# unregister the user from the server
 	if hasattr(ctcn, 'nick') and ctcn.nick in srv.clients:
 		del srv.clients[ctcn.nick]
+		
+	# close the connection
+	ctcn.close()

@@ -15,7 +15,7 @@ def handle_event(srv, user, params):
 		srv.send_msg(user, "461 %s OPER :OPER takes 2 parameters!" % user.nick)
 		return
 		
-	if user.has_mode('o'): return # <-- user is already an oper
+	#if user.has_mode('o'): return # <-- user is already an oper
 
 	username = params[0]
 	password = params[1]

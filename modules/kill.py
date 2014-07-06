@@ -5,6 +5,8 @@
 
 import symbols
 
+import modules.quit
+
 __command__ = 'KILL'
 
 def handle_event(srv, ctcn, params):
@@ -14,7 +16,7 @@ def handle_event(srv, ctcn, params):
 	
 	# only operators can use KILL
 	if not ctcn.has_mode('o'):
-		srv.send_msg(ctcn, "481 %s :You must be an operator to use KILL." % ctcn.nick) 
+		srv.send_msg(ctcn, "481 %s :You must be a server operator." % ctcn.nick)
 		return
 	
 	target = params[0]
@@ -27,9 +29,14 @@ def handle_event(srv, ctcn, params):
 	
 	user = srv.clients[target]
 	
+	# can't kill protected users unless you have sufficient status
+	if user.has_mode('q') and (ctcn.mode_stack < symbols.user_modes['q']):
+		srv.send_msg(ctcn, "481 %s :You don't have permission to kill protected users." % ctcn.nick)
+		return
+	
 	# announce the kill notice
-	# TODO what is 'xxx' supposed to be?
-	srv.announce_common(ctcn, "KILL %s :xxx %s" % (user.nick, reason), ctcn.get_hostmask())
+	# TODO what is XXX supposed to be?
+	srv.send_msg(user, "KILL %s :XXX %s" % (user.nick, reason), ctcn.get_hostmask())
 
-	# apply the action
-	user.close()
+	# create a quit event
+	modules.quit.handle_event(srv, user, ['[%s] Local kill by %s (%s)' % (srv.name, ctcn.nick, reason)])
