@@ -3,6 +3,8 @@
 # Copyright (C) 2014 Quytelda Gaiwin
 #
 
+#!/usr/bin/python
+
 import sys
 
 from twisted.internet import reactor, endpoints
