@@ -48,7 +48,7 @@ class IRCConnection(LineReceiver):
 	# applies vhosts and cloaks
 	def host(self, cloak = True):
 		host = self.vhost if hasattr(self, 'vhost') else self.transport.getPeer().host
-		if self.has_mode('x'): host = hashlib.sha256(host).hexdigest()[0:len(host)]
+		if self.has_mode('x') and cloak: host = hashlib.sha256(host).hexdigest()[0:len(host)]
 		return host
 	
 	# convenience method to test if a user has a mode flag
