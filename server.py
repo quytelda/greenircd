@@ -3,7 +3,9 @@
 # Copyright (C) 2014 Quytelda Gaiwin
 #
 
-#!/usr/bin/python
+# TODO: server links
+# TODO: mode on connect setting
+# TODO: WHOIS, WHOWAS, finish WHO (regex filter, oper privs, etc)
 
 import sys
 

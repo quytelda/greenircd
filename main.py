@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # main.py
 #
 # Copyright (C) 2014 Quytelda Gaiwin
@@ -8,7 +9,7 @@ import ConfigParser
 from server import IRCServer, OperEntry
 
 def main(path):
-			
+
 	server = IRCServer()
 #	server.start()
 

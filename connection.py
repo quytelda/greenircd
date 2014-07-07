@@ -2,12 +2,19 @@
 # connection.py
 # Connection (C) 2014 Quytelda Gaiwin
 #
+
+# TODO: finish host cloaking
+# TODO: vhosts
+import hashlib
+
 from twisted.internet import protocol
 from twisted.protocols.basic import LineReceiver
 
 import symbols
 
 class IRCConnection(LineReceiver):
+	cloaked = True
+	
 	def __init__(self, server):
 		self.server = server
 		self.mode_stack = 0
@@ -30,12 +37,19 @@ class IRCConnection(LineReceiver):
 	def close(self):
 		self.transport.loseConnection()
 
-	def get_hostmask(self, mask = False):
+	def get_hostmask(self):
+		# hostmasks for clients are in the form:
+		# <nick>!<username>@<host>
 		if hasattr(self, 'nick') and hasattr(self, 'uid'):
-			host = self.vhost if hasattr(self, 'vhost') else self.transport.getPeer().host
+			host = self.host()
 			return "%s!%s@%s" % (self.nick, self.uid, host)
-		else:
-			return "server.host"
+	
+	# returns the host string for this user as it should be seen by other users
+	# applies vhosts and cloaks
+	def host(self, cloak = True):
+		host = self.vhost if hasattr(self, 'vhost') else self.transport.getPeer().host
+		if self.has_mode('x'): host = hashlib.sha256(host).hexdigest()[0:len(host)]
+		return host
 	
 	# convenience method to test if a user has a mode flag
 	def has_mode(self, flag):

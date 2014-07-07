@@ -24,6 +24,8 @@ def channel_who(srv, ctcn, channel, params = []):
 		status = 'H' + symbols.status_modes[chan_status]['prefix']
 		if member.has_mode('o'): status += '*'
 
-		srv.send_msg(ctcn, '352 %s %s %s %s %s %s %s :0 %s' % (ctcn.nick, channel.name, ctcn.uid, ctcn.transport.getPeer().host, srv.name, ctcn.nick, status, 'REALNAME'))
+		cloak = False if ctcn.has_mode('o') else True
+
+		srv.send_msg(ctcn, '352 %s %s %s %s %s %s %s :0 %s' % (ctcn.nick, channel.name, ctcn.uid, ctcn.host(cloak), srv.name, ctcn.nick, status, 'REALNAME'))
 
 	srv.send_msg(ctcn, '315 %s %s :%s' % (ctcn.nick, channel.name, "End of /WHO List"))
