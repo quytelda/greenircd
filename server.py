@@ -79,9 +79,8 @@ class IRCServer:
 		self.send_msg(ctcn, '005 %s PREFIX=(%s)%s :are supported' % (ctcn.nick, ''.join(chan_modes), ''.join(chan_prefixes)))
 		
 		# set initial client state
-		# set modes
-		setattr(ctcn, 'mode_stack', 0)
-		#self.send_msg(ctcn, 'MODE %s :+i' % (ctcn.nick), ctcn.nick)
+		# set modes (initially just 'x', indicating cloaked addresses)
+		setattr(ctcn, 'mode_stack', symbols.user_modes['x'])
 		# if there is any channels to autojoin, join them
 		if len(self.autojoin) > 0:
 			modules.join.handle_event(self, ctcn, [self.autojoin])

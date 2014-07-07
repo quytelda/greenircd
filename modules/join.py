@@ -45,6 +45,11 @@ def handle_event(srv, ctcn, params):
 	if channel.has_mode('l') and (len(channel.members) >= channel.limit):
 		srv.send_msg(ctcn, "471 %s %s :Channel is full." % (ctcn.nick, target))
 		return
+	
+	# if the channel is oper only (+O), only server operators can join
+	if channel.has_mode('O') and not user.has_mode('o'):
+		srv.send_msg(ctcn, "520 %s %s :Only server operators can join." % (ctcn.nick, target))
+		return
 
 	# join the user
 	channel.join(ctcn)
