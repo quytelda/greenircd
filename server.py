@@ -17,19 +17,36 @@ from modules import *
 
 class IRCServer:
 	version = 'GreenIRCDv0.1'
+	port = 6667
+	opers = []
+	autojoin = ''
+	operjoin = ''
 
-	def __init__(self, name):
-		self.name = name
+	def __init__(self):
 		self.clients = {}
-		self.servers = []
+		self.servers = {}
 		self.hooks = {}
 		
 		self.register_hooks()
 		
 		self.channels = {}
 		
-	def start(self, port):
-		self.endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
+	def set_attribute(self, key, value):
+		if key == 'port':
+			self.port = int(value)
+		elif key == 'auto-join':
+			self.autojoin = value
+		elif key == 'oper-join':
+			self.operjoin = value
+		else:
+			print "Config Error: Unrecognized directive: %s" % key
+
+	def start(self):
+		if not hasattr(self, 'name'):
+			print "FAIL: name not set!"
+			return
+		
+		self.endpoint = endpoints.TCP4ServerEndpoint(reactor, self.port)
 		self.endpoint.listen(connection.IRCConnectionFactory(self))
 		reactor.run()
 		
@@ -63,6 +80,9 @@ class IRCServer:
 		# set modes
 		setattr(ctcn, 'mode_stack', 0)
 		#self.send_msg(ctcn, 'MODE %s :+i' % (ctcn.nick), ctcn.nick)
+		# if there is any channels to autojoin, join them
+		if len(self.autojoin) > 0:
+			modules.join.handle_event(self, ctcn, [self.autojoin])
 
 	def register_server(ctcn):
 		self.servers.append(ctcn)
@@ -148,5 +168,7 @@ class IRCMessage:
 				
 		print "Params:", self.params
 		
-server = IRCServer('green.tamalin.org')
-server.start(3333)
+class OperEntry:
+	def __init__(self, username, auth):
+		self.username = username
+		self.auth = auth

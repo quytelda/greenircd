@@ -19,6 +19,7 @@ class IRCChannel:
 		self.topic = ''
 		self.modes = ''
 		self.mode_stack = 0
+		self.limit = 30
 		self.members = {}
 	
 	def join(self, user):

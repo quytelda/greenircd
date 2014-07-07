@@ -8,8 +8,7 @@ import symbols
 
 __command__ = 'MODE'
 
-# (:prefix) MODE <target> (+/-)<flags> <params>...
-
+# MODE Syntax: (:prefix) MODE <target> (+/-)<flags> <params>...
 def handle_event(srv, ctcn, params):
 	if len(params) < 1:
 		srv.send_msg(user, "461 %s MODE :MODE takes at least 1 parameter!" % user.nick)
@@ -69,6 +68,11 @@ def channel_mode(srv, ctcn, channel, params):
 					del params[1]
 		# </END STATUS MODES>
 		
+		# handle the modes that take parameters
+		if (flag == 'l') and (len(params) > 1): # Channel limit flag, takes one integer parameter
+			channel.limit = int(params[1])
+			del params[1]
+		
 		# add the mask to the channel mode
 		channel.mode_stack |= mask
 
@@ -91,7 +95,7 @@ def channel_mode(srv, ctcn, channel, params):
 					channel.members[srv.clients[params[1]]] ^= status[0]
 					srv.announce_channel(ctcn, channel, 'MODE %s -%s %s' % (channel.name, flag, params[1]), ctcn.get_hostmask())
 					del params[1]
-					
+
 		# subtract the mask from the channel mode
 		channel.mode_stack ^= mask
 
@@ -99,8 +103,10 @@ def channel_mode(srv, ctcn, channel, params):
 	net_rem_flags += symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
 	net_mode = (net_add_flags if (net_add_flags) else '') + (net_rem_flags if (net_rem_flags) else '')
 
-	srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, net_mode), ctcn.get_hostmask())
-		
+	# if any modes were actually changed, we announce it to the channel
+	if len(net_mode) > 0:
+		srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, net_mode), ctcn.get_hostmask())
+
 def user_mode(srv, ctcn, user, params):
 	# if only a target is provided,
 	# the command is treated as a query

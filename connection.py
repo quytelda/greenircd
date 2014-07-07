@@ -30,9 +30,10 @@ class IRCConnection(LineReceiver):
 	def close(self):
 		self.transport.loseConnection()
 
-	def get_hostmask(self):
+	def get_hostmask(self, mask = False):
 		if hasattr(self, 'nick') and hasattr(self, 'uid'):
-			return "%s!%s@%s" % (self.nick, self.uid, self.transport.getPeer().host)
+			host = self.vhost if hasattr(self, 'vhost') else self.transport.getPeer().host
+			return "%s!%s@%s" % (self.nick, self.uid, host)
 		else:
 			return "server.host"
 	

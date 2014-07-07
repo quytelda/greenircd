@@ -6,6 +6,7 @@ import hashlib
 import json
 
 import symbols
+import modules.join
 
 __command__ = 'OPER'
 
@@ -20,25 +21,14 @@ def handle_event(srv, user, params):
 	username = params[0]
 	password = params[1]
 	pwdhash = hashlib.sha256(password).hexdigest()
+	modelist = ''
 	
 	# authenticate the user
-	success = False
-	if not os.path.isfile('opers.conf'):
-		print "* missing file opers.conf"
-		return
-	
-	# find the matching oper entry
-	oper_entry = None
-	pwdfile = open('opers.conf', 'r')
-	for line in pwdfile:
-		try:
-			entry = json.loads(line)
-			if (entry['user'] == username) and (entry['hash'] == pwdhash):
-				oper_entry = entry
-				break
-		except:
-			print "* Invalid oper entry:", line
-			return
+	for oper in srv.opers:
+		if (oper.username == username) and (oper.auth == pwdhash):
+			# if there are flags in the oper entry, remember them for later
+			if hasattr(oper, 'flags'): modelist = oper.flags
+			break
 	else: # no matching entries were found
 		srv.send_msg(user, "464 %s :Invalid OPER login credentials; this will be reported." % user.nick)
 		return
@@ -46,7 +36,7 @@ def handle_event(srv, user, params):
 	orig_stack = user.mode_stack
 	
 	# apply the modes listed in the config file
-	for flag in oper_entry['flags']:
+	for flag in modelist:
 		if flag in symbols.user_modes:
 			user.mode_stack |= symbols.user_modes[flag]
 		
@@ -54,4 +44,8 @@ def handle_event(srv, user, params):
 	
 	# send the confirmation messages to the user
 	srv.send_msg(user, 'MODE %s :+%s' % (user.nick, net_modes))
-	srv.send_msg(user, '381 %s :%s' % (user.nick, '*** Logged in as IRC Operator'))
+	srv.send_msg(user, '381 %s :%s' % (user.nick, '*** Logged in as IRC Operator ***'))
+	
+	# if there are channels for opers to autojoin, join them
+	if len(srv.operjoin) > 0:
+		modules.join.handle_event(srv, user, [srv.operjoin])
