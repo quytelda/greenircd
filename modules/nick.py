@@ -3,6 +3,7 @@
 #
 
 __command__ = 'NICK'
+req_register = False
 
 # NICK <nickname> [<hopcount>]
 def handle_event(srv, ctcn, params):

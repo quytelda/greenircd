@@ -3,6 +3,7 @@
 #
 
 __command__ = 'USER'
+req_register = False
 
 # USER <username> <hostname> <servername> :<realname>
 def handle_event(srv, ctcn, params):

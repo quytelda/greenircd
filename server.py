@@ -18,6 +18,7 @@ import modules
 from modules import *
 
 class IRCServer:
+	"""IRCServer represents a running IRC server that accepts connections from clients and processes and executes commands from those clients.  It keeps track of (a) it's list of registered clients, (b) its list of existing channels, (c) its list of linked servers, and (d) all the metadata needed to run the service.  The server waits for incoming connections on the given port, and then passes them on to connection handlers (IRCConnection objects) when an external machine connects."""
 	version = 'GreenIRCDv0.1'
 	port = 6667
 	opers = []
@@ -34,6 +35,7 @@ class IRCServer:
 		self.channels = {}
 		
 	def set_attribute(self, key, value):
+		"""Sets some configuration attribute for the server."""
 		if key == 'port':
 			self.port = int(value)
 		elif key == 'auto-join':
@@ -44,6 +46,7 @@ class IRCServer:
 			print "Config Error: Unrecognized directive: %s" % key
 
 	def start(self):
+		"""Attempts to start the server and listen for connections."""
 		if not hasattr(self, 'name'):
 			print "FAIL: name not set!"
 			return
@@ -53,6 +56,7 @@ class IRCServer:
 		reactor.run()
 		
 	def register_hooks(self):
+		"""Registers a command hook from a module."""
 		for module in dir(modules):
 			if module.startswith('__'): continue
 			
@@ -67,6 +71,7 @@ class IRCServer:
 			self.hooks[mod.__command__] = mod.handle_event
 
 	def register_client(self, ctcn):
+	"""Registers a client with the server."""
 		self.clients[ctcn.nick] = ctcn
 		
 		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
@@ -86,11 +91,13 @@ class IRCServer:
 			modules.join.handle_event(self, ctcn, [self.autojoin])
 
 	def register_server(ctcn):
+		"""Registers a linked server."""
 		self.servers.append(ctcn)
 		
 		return self
 		
 	def unregister_connection(self, ctcn):
+		"""Attempts to reverse the effects of registering a client with the server."""
 		if hasattr(ctcn, 'nick') and ctcn.nick in self.clients: # a client lost connection
 			# remove the user from all channels
 			for chan in self.channels:
@@ -104,35 +111,40 @@ class IRCServer:
 		print "* client unregistered"
 		
 	def handle_message(self, ctcn, data):
+		"""Handles and incoming message from a connection.  Usually, this will just pass it on to the command handler."""
 		command = data.strip()
 		msg = IRCMessage(command)
 		
 		self.do_command(ctcn, msg)
 		
 	def do_command(self, ctcn, msg):
+		"""Attempts to execute a command with the corresponding command handle (loaded as a module with a handle_event method)."""
 		# attempt to handle the command with the correct hook module
 		if msg.command.upper() in self.hooks:
 			self.hooks[msg.command.upper()](self, ctcn, msg.params)
 
-		
 	def send_msg(self, ctcn, msg, prefix = None):
+		"""Sends a message to the connection, appropriately padded with CRLF, and prefixed with this server's name or the contents of the prefix parameter, if included."""
 		ctcn.transport.write(':%s %s\r\n' % (self.name if (prefix == None) else prefix, msg))
 	
 	def send_numeric(self, ctcn, numeric, msg, prefix = None):
 		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg), prefix)
 		
 	def announce(self, ctcn, msg, prefix = None, exclude = False):
+		"""Sends a message to ALL the connections registered on this server, appropriately padded and prefixed by send_msg."""
 		# send this message to every client we have registered
 		for client in self.clients.values():
 			if (not exclude) or (ctcn != client) or (not client.nick in self.clients):
 				self.send_msg(client, msg, prefix)
 			
 	def announce_common(self, ctcn, msg, prefix = None, exclude = False):
+		"""Sends a message to all clients that have at least one channel in common with the provided connection, properly formatted by send_msg.  If the exclude parameter is true (it is false by default), the message will *not* be sent to ctcn."""
 		for chan in self.channels:
 			if ctcn in self.channels[chan].members:
 				self.announce_channel(ctcn, self.channels[chan], msg, prefix, exclude)
 
 	def announce_channel(self, ctcn, channel, msg, prefix = None, exclude = False):
+		"""Sends a message to all the members of a channel, properly formatted by send_msg."""
 		# send this message to all members of a channel
 		for user in channel.members:
 			if (not exclude) or (user != ctcn) or (not user in self.clients.values()):
