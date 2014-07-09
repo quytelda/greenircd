@@ -20,8 +20,7 @@ def channel_who(srv, ctcn, channel, params = []):
 	# if there is one query, it is probably by a channel
 	
 	for member in channel.members:
-		chan_status = channel.get_status(member)
-		status = 'H' + symbols.status_modes[chan_status]['prefix']
+		status = 'H' + channel.prefix(member)[:1]
 		if member.has_mode('o'): status += '*'
 
 		cloak = False if ctcn.has_mode('o') else True

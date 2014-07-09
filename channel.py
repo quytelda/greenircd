@@ -52,13 +52,20 @@ class IRCChannel:
 		return (self.mode_stack & symbols.chan_modes[flag]) > 0
 		
 	def get_status(self, user):
-		#print "* composite status is", self.members[user]
 		highest_status = 1
 		for mode in symbols.status_modes:
 			if (self.members[user] & mode) > highest_status: highest_status = mode
 		
 		return highest_status
-		
+	
+	def prefix(self, user):
+		prefix = ''
+		for status in sorted(symbols.status_modes, reverse = True):
+			if (self.members[user] & status) > 0:
+				prefix += symbols.status_modes[status]['prefix']
+				
+		return prefix
+
 	def names(self):
 		nam_list = ''
 		for member in self.members:

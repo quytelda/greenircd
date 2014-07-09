@@ -2,12 +2,25 @@
 # names.py
 #
 
+import symbols
+
 __command__ = "NAMES"
 
+# NAMES Syntax: NAMES <channel>{,<channel>}
 def handle_event(srv, ctcn, params):
-	channel = params[0]
+	if len(params) < 1:
+		srv.send_numeric(ctcn, symbols.ERR_NEEDMOREPARAMS, "NAMES :NAMES requires at least one parameter.")
+
+	chan = params[0]
 	
-	nam_list = srv.channels[channel].names()
+	channel = srv.channels[chan]
 	
-	srv.send_msg(ctcn, '353 %s = %s :%s' % (ctcn.nick, channel, nam_list))
-	srv.send_msg(ctcn, '366 %s %s :%s' % (ctcn.nick, channel, "End of /NAMES List"))
+	# generate a list
+	names = ''
+	for member in channel.members:
+		names += channel.prefix(member) + member.nick + ' '
+	
+	names = names.strip()
+	
+	srv.send_numeric(ctcn, symbols.RPL_NAMREPLY, "= %s :%s" % (chan, names))
+	srv.send_numeric(ctcn, symbols.RPL_ENDOFNAMES, "%s :%s" % (chan, "End of NAMES List"))

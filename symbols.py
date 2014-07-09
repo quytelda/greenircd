@@ -2,17 +2,34 @@
 # symbols.py
 #
 
-status_modes = {
-	2**0 : {'prefix' : '', 'modechar' : ''},
-	2**1 : {'prefix' : '+', 'modechar' : 'v'},
-	2**2 : {'prefix' : '%', 'modechar' : 'h'},
-	2**3 : {'prefix' : '@', 'modechar' : 'o'},
-	2**4 : {'prefix' : '&', 'modechar' : 'a'},
-	2**5 : {'prefix' : '~', 'modechar' : 'q'}
-}
+CHOWNER = 2**5
+CHADMIN = 2**4
+CHOPER = 2**3
+CHHOP = 2**2
+CHVOICE = 2**1
+CHUSER = 2**0
 
-numeric = {
-	'WELCOME' : '001'
+RPL_WELCOME = 001
+RPL_AWAY = 301
+RPL_WHOISUSER = 311 # <nick> <user> <host> * :<real_name>
+RPL_WHOISSERVER = 312 # <nick> <server> :<server_info>
+RPL_WHOISOPERATOR = 313 # <nick> :priveleges
+RPL_WHOWASUSER = 314
+RPL_ENDOFWHOIS = 318
+RPL_WHOISCHANNELS = 319
+RPL_NAMREPLY = 353 # ( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *( ' ' [ '@' / '+' ] <nick> )
+RPL_ENDOFNAMES = 366 # <channel> :<info>
+ERR_NOSUCHNICK = 401 # <nick> :*( ( '@' / '+' ) <channel> ' ' )
+ERR_NONICKNAMEGIVEN = 431
+ERR_NEEDMOREPARAMS = 461 # <command> :<reason>
+
+status_modes = {
+	CHUSER : {'prefix' : '', 'modechar' : ''},
+	CHVOICE : {'prefix' : '+', 'modechar' : 'v'},
+	CHHOP : {'prefix' : '%', 'modechar' : 'h'},
+	CHOPER : {'prefix' : '@', 'modechar' : 'o'},
+	CHADMIN : {'prefix' : '&', 'modechar' : 'a'},
+	CHOWNER : {'prefix' : '~', 'modechar' : 'q'}
 }
 
 # lvhopsmntikrRcaqOALQbSeIKVfMCuzNTGjZ

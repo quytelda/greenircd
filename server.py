@@ -71,7 +71,7 @@ class IRCServer:
 			self.hooks[mod.__command__] = mod.handle_event
 
 	def register_client(self, ctcn):
-	"""Registers a client with the server."""
+		"""Registers a client with the server."""
 		self.clients[ctcn.nick] = ctcn
 		
 		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
@@ -128,6 +128,7 @@ class IRCServer:
 		ctcn.transport.write(':%s %s\r\n' % (self.name if (prefix == None) else prefix, msg))
 	
 	def send_numeric(self, ctcn, numeric, msg, prefix = None):
+		print "Numeric:", numeric, "Message:", msg
 		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg), prefix)
 		
 	def announce(self, ctcn, msg, prefix = None, exclude = False):
