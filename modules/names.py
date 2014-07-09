@@ -29,7 +29,7 @@ def handle_event(srv, ctcn, params):
 	names = ''
 	for member in channel.members:
 		names += channel.prefix(member) + member.nick + ' '
-	
+
 	names = names.strip()
 	
 	srv.send_numeric(ctcn, symbols.RPL_NAMREPLY, "= %s :%s" % (target, names))

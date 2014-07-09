@@ -32,6 +32,11 @@ def handle_event(srv, ctcn, params):
 		for chan in chans: modules.join.handle_event(srv, ctcn, [chan])
 		return
 
+	# channel names must conform to the naming rules
+	if not target.startswith('#'):
+		srv.send_numeric(ctcn, ERR_NOSUCHCHANNEL, "%s :No such channel." % target)
+		return
+	
 	# if we are the first to join the channel, then create it
 	if not (target in srv.channels):
 		srv.channels[target] = IRCChannel(target, srv)
