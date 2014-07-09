@@ -2,6 +2,8 @@
 # symbols.py
 #
 
+# TODO: chanmodes +pbki, usermodes +si
+
 CHOWNER = 2**5
 CHADMIN = 2**4
 CHOPER = 2**3
@@ -15,11 +17,13 @@ RPL_WHOISUSER = 311 # <nick> <user> <host> * :<real_name>
 RPL_WHOISSERVER = 312 # <nick> <server> :<server_info>
 RPL_WHOISOPERATOR = 313 # <nick> :priveleges
 RPL_WHOWASUSER = 314
+RPL_ENDOFWHO = 315 # <name> :<info>
 RPL_ENDOFWHOIS = 318
 RPL_WHOISCHANNELS = 319
 RPL_LISTSTART = 321 # Channels :Users Name
 RPL_LIST = 322 # <channel> <#_visible> :<topic>
 RPL_LISTEND = 323 # :info
+RPL_WHOREPLY = 352 # <channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real_name>
 RPL_NAMREPLY = 353 # ( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *( ' ' [ '@' / '+' ] <nick> )
 RPL_ENDOFNAMES = 366 # <channel> :<info>
 ERR_NOSUCHNICK = 401 # <nick> :*( ( '@' / '+' ) <channel> ' ' )

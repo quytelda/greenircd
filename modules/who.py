@@ -6,25 +6,28 @@ import symbols
 
 __command__ = 'WHO'
 
+# WHO Syntax: WHO [<name> [<o>]]
 # <channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real_name>
 def handle_event(srv, ctcn, params):
-	# if there are no params, this is a global query
-	# TODO: implement globals
-	if len(params) < 1:
-		for chan in srv.channels:
-			channel_who(srv, ctcn, srv.channels[chan])
-	elif params[0] in srv.channels:
-		channel_who(srv, ctcn, srv.channels[params[0]])
-
-def channel_who(srv, ctcn, channel, params = []):
-	# if there is one query, it is probably by a channel
 	
-	for member in channel.members:
-		status = 'H' + channel.prefix(member)[:1]
-		if member.has_mode('o'): status += '*'
-
-		cloak = False if ctcn.has_mode('o') else True
-
-		srv.send_msg(ctcn, '352 %s %s %s %s %s %s %s :0 %s' % (member.nick, channel.name, member.uid, member.host(cloak), srv.name, member.nick, status, 'REALNAME'))
-
-	srv.send_msg(ctcn, '315 %s %s :%s' % (ctcn.nick, channel.name, "End of /WHO List"))
+	# if there are no parameters, show all users not marked invisible (+i)
+	if len(params) == 0:
+		global_who(srv, ctcn, params)
+#	if len(params) == 1:
+		#channel_who(srv, ctcn, srv.channels[params[0]])
+	
+def global_who(srv, ctcn, params):
+	for channel in srv.channels.values():
+		ismem = (ctcn in channel.members)
+		for user in channel.members:
+			if user.has_mode('i') and not ismem: continue
+		
+			srv.send_numeric(ctcn, symbols.RPL_WHOREPLY, "%s %s %s %s %s %s :0 %s" % (channel.name, user.uid, user.host(), user.server.name, user.nick, 'H' + channel.prefix(user)[:1], 'REALNAME'))
+		
+	srv.send_numeric(ctcn, symbols.RPL_ENDOFWHO, ":End of WHO list")
+	
+def channel_who(srv, ctcn, channel):
+	for user in channel.members:
+		srv.send_numeric(ctcn, symbols.RPL_WHOREPLY, "%s %s %s %s %s %s :0 REALNAME" % (channel.name, user.uid, user.host(), user.server.name, user.nick, 'H') )
+		
+	srv.send_numeric(ctcn, symbols.RPL_ENDOFWHO, ":End of WHO list")

@@ -5,7 +5,7 @@
 
 # TODO: server links
 # TODO: mode on connect setting
-# TODO: WHOIS, WHOWAS, finish WHO (regex filter, oper privs, etc)
+# TODO: WHOWAS, finish WHO (regex filter, oper privs, etc)
 
 import sys
 
