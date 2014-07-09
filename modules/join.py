@@ -12,6 +12,7 @@
 
 from channel import IRCChannel
 
+import symbols
 import modules.topic
 import modules.names
 
@@ -34,7 +35,7 @@ def handle_event(srv, ctcn, params):
 
 	# channel names must conform to the naming rules
 	if not target.startswith('#'):
-		srv.send_numeric(ctcn, ERR_NOSUCHCHANNEL, "%s :No such channel." % target)
+		srv.send_numeric(ctcn, symbols.ERR_NOSUCHCHANNEL, "%s :No such channel." % target)
 		return
 	
 	# if we are the first to join the channel, then create it
