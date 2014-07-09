@@ -17,6 +17,9 @@ RPL_WHOISOPERATOR = 313 # <nick> :priveleges
 RPL_WHOWASUSER = 314
 RPL_ENDOFWHOIS = 318
 RPL_WHOISCHANNELS = 319
+RPL_LISTSTART = 321 # Channels :Users Name
+RPL_LIST = 322 # <channel> <#_visible> :<topic>
+RPL_LISTEND = 323 # :info
 RPL_NAMREPLY = 353 # ( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *( ' ' [ '@' / '+' ] <nick> )
 RPL_ENDOFNAMES = 366 # <channel> :<info>
 ERR_NOSUCHNICK = 401 # <nick> :*( ( '@' / '+' ) <channel> ' ' )
@@ -41,6 +44,7 @@ chan_modes = {
 	'm' : 2**3,
 	'P' : 2**4,
 	'O' : 2**5,
+	's' : 2**6,
 	'o' : 0,
 	'v' : 0,
 	'h' : 0,
