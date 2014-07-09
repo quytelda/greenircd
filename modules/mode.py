@@ -11,7 +11,7 @@ __command__ = 'MODE'
 # MODE Syntax: (:prefix) MODE <target> (+/-)<flags> <params>...
 def handle_event(srv, ctcn, params):
 	if len(params) < 1:
-		srv.send_msg(user, "461 %s MODE :MODE takes at least 1 parameter!" % user.nick)
+		srv.send_numeric(ctcn, symbols.ERR_NEEDMOREPARAMS, "MODE :MODE requires at least one parameter.")
 		return
 
 	target = params[0]
@@ -23,7 +23,7 @@ def handle_event(srv, ctcn, params):
 	elif target in srv.clients:
 		user_mode(srv, ctcn, srv.clients[target], params[1:])
 	else: # the target doesn't exists
-		srv.send_msg(ctcn, "401 %s :%s is not a known nick or channel!" % (target, target))
+		srv.send_numeric(ctcn, symbols.ERR_NOSUCHNICK, "%s :No such nick or channel." % target)
 
 def channel_mode(srv, ctcn, channel, params):
 	# if only a target is provided,

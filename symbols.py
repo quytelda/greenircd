@@ -26,6 +26,8 @@ ERR_NOSUCHNICK = 401 # <nick> :*( ( '@' / '+' ) <channel> ' ' )
 ERR_NOSUCHCHANNEL = 403 # <channel> :<reason>
 ERR_NONICKNAMEGIVEN = 431
 ERR_NEEDMOREPARAMS = 461 # <command> :<reason>
+ERR_CHANNELISFULL = 471 # <channel> :<reason>
+ERR_NOPRIVILEGES = 481 # :<reason>
 
 status_modes = {
 	CHUSER : {'prefix' : '', 'modechar' : ''},

@@ -49,12 +49,13 @@ def handle_event(srv, ctcn, params):
 	# if the channel has a join limit (+l), and is full, don't join
 	# however, operators with override permission can join
 	if channel.has_mode('l') and (len(channel.members) >= channel.limit):
-		srv.send_msg(ctcn, "471 %s %s :Channel is full." % (ctcn.nick, target))
+		srv.send_numeric(ctcn, symbols.ERR_CHANNELISFULL, "%s :Channel is full." % target)
 		return
 	
 	# if the channel is oper only (+O), only server operators can join
+	# TODO compare for mode_stack < +o
 	if channel.has_mode('O') and not user.has_mode('o'):
-		srv.send_msg(ctcn, "520 %s %s :Only server operators can join." % (ctcn.nick, target))
+		srv.send_numeric(ctcn, symbols.ERR_NOPRIVILEGES, ":Only server operators can join.")
 		return
 
 	# join the user
