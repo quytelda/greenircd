@@ -54,7 +54,7 @@ def handle_event(srv, ctcn, params):
 	
 	# if the channel is oper only (+O), only server operators can join
 	# TODO compare for mode_stack < +o
-	if channel.has_mode('O') and not user.has_mode('o'):
+	if channel.has_mode('O') and (ctcn.mode_stack < symbols.user_modes['o']):
 		srv.send_numeric(ctcn, symbols.ERR_NOPRIVILEGES, ":Only server operators can join.")
 		return
 
