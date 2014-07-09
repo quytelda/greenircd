@@ -20,6 +20,7 @@ RPL_WHOISCHANNELS = 319
 RPL_NAMREPLY = 353 # ( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *( ' ' [ '@' / '+' ] <nick> )
 RPL_ENDOFNAMES = 366 # <channel> :<info>
 ERR_NOSUCHNICK = 401 # <nick> :*( ( '@' / '+' ) <channel> ' ' )
+ERR_NOSUCHCHANNEL = 403 # <channel> :<reason>
 ERR_NONICKNAMEGIVEN = 431
 ERR_NEEDMOREPARAMS = 461 # <command> :<reason>
 

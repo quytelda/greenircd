@@ -24,7 +24,7 @@ class IRCChannel:
 	
 	def join(self, user):
 		# the first user gets the highest mode available (+q, owner)
-		status = 2**5 if (len(self.members) == 0) else 1
+		status = (symbols.CHOWNER | symbols.CHOPER) if (len(self.members) == 0) else 1
 		self.members[user] = status
 	
 	def part(self, user):
