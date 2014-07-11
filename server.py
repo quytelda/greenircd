@@ -128,7 +128,7 @@ class IRCServer:
 		ctcn.transport.write(':%s %s\r\n' % (self.name if (prefix == None) else prefix, msg))
 	
 	def send_numeric(self, ctcn, numeric, msg, prefix = None):
-		print "Numeric:", numeric, "Message:", msg
+		"""Sends a numeric reply to the given connection."""
 		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg), prefix)
 		
 	def announce(self, ctcn, msg, prefix = None, exclude = False):

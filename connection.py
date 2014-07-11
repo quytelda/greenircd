@@ -6,6 +6,7 @@
 # TODO: finish host cloaking
 # TODO: vhosts
 import hashlib
+import socket
 
 from twisted.internet import protocol
 from twisted.protocols.basic import LineReceiver
@@ -13,7 +14,8 @@ from twisted.protocols.basic import LineReceiver
 import symbols
 
 class IRCConnection(LineReceiver):
-	cloaked = True
+	rhost = None
+	vhost = None
 	
 	def __init__(self, server):
 		self.server = server
@@ -24,9 +26,15 @@ class IRCConnection(LineReceiver):
 	# TODO: hostname resolution	
 	def connectionMade(self):
 		peer_address = self.transport.getPeer().host
-		#print self.transport.getPeer().getDestination().getHandle().getpeername()
-		self.server.send_msg(self, 'NOTICE AUTH :*** Connection established!')
-	
+		self.server.send_msg(self, 'NOTICE AUTH :*** Connection established; finding your hostname...')
+		try:
+			host = socket.gethostbyaddr(peer_address)
+			self.server.send_msg(self, 'NOTICE AUTH :*** Found your hostname (%s).' % host[0])
+			self.rhost = host[0]
+		except socket.herror:
+			self.rhost = peer_address
+			self.server.send_msg(self, 'NOTICE AUTH :*** Unable to resolve host; using peer IP.')
+
 	def connectionLost(self, reason):
 		print "* connection lost!"
 		self.server.unregister_connection(self)
@@ -44,13 +52,16 @@ class IRCConnection(LineReceiver):
 			host = self.host()
 			return "%s!%s@%s" % (self.nick, self.uid, host)
 	
-	# returns the host string for this user as it should be seen by other users
-	# applies vhosts and cloaks
-	def host(self, cloak = True):
-		host = self.vhost if hasattr(self, 'vhost') else self.transport.getPeer().host
-		if self.has_mode('x') and cloak: host = hashlib.sha256(host).hexdigest()[0:len(host)]
-		return host
-	
+	# returns the host string for this user
+	# applies vhosts and cloaks as needed
+	def host(self, cloak = True, vhost = True):
+		if (self.vhost != None) and vhost and self.has_mode('t'):
+			return self.vhost
+		elif cloak and self.has_mode('x'):
+			return 'cloaked-address'
+		else:
+			return self.rhost
+
 	# convenience method to test if a user has a mode flag
 	def has_mode(self, flag):
 		return (self.mode_stack & symbols.user_modes[flag]) > 0
