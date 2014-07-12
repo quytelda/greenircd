@@ -6,24 +6,29 @@ import mode
 
 __command__ = 'PART'
 
-def handle_event(srv, ctcn, params):
+def handle_event(srv, source, params):
 	# die if there are no parameters
 	if len(params) < 1:
-		srv.send_msg(user, "461 %s PART :PART takes at least 1 parameters!" % ctcn.nick)
+		source.ctcn.numeric(symbols.ERR_NEEDMOREPARAMS, source.nick, "PART :PART takes at least 1 parameters!")
 		return
 
 	target = params[0]
 	msg = "Leaving" if (len(params) < 2) else params[1]
 
 	# if the channel doesn't exist, ignore
-	if not (target in srv.channels): return
+	if not (target in srv.channels):
+		return
+
 	channel = srv.channels[target]
 
 	# if the user is not in the channel, ignore
-	if not ctcn in channel.members: return
+	if not source in channel.members: return
 
 	# send announcement, and confirmation
-	srv.announce_channel(ctcn, channel, 'PART %s :%s' % (target, msg), ctcn.get_hostmask())
+	srv.announce_channel(channel, 'PART %s :%s' % (target, msg), source.hostmask())
 
 	# part the user
-	channel.part(ctcn)
+	channel.part(source)
+	
+	# if that was the last user in the channel, we should forget the channel
+	# TODO

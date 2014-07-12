@@ -5,55 +5,54 @@
 
 from channel import IRCChannel
 
+import symbols
 import modules.names
 
 __command__ = "KICK"
 
 # (:prefix) KICK <#target> <user> (:reason)
-def handle_event(srv, ctcn, params):
+def handle_event(srv, source, params):
 	if len(params) < 2:
-		srv.send_msg(user, "461 %s KICK :KICK takes at least 2 parameters!" % user.nick)
+		source.ctcn.message("461 %s KICK :KICK takes at least 2 parameters!" % source.nick)
 		return
 	
 	target = params[0]
 	nick = params[1]
-	reason = params[2] if (len(params) > 2) else ctcn.nick
+	reason = params[2] if (len(params) > 2) else source.nick
 	
 	# must be a valid channel
 	if not target in srv.channels:
-		srv.send_msg(user, "403 %s %s :Channel %s doesn't exist." % (ctcn.nick, target, target))
+		source.ctcn.message("403 %s %s :Channel %s doesn't exist." % (source.nick, target, target))
 		return
 	channel = srv.channels[target]
 	
 	# user must be a valid user
 	if not nick in srv.clients:
-		srv.send_msg(ctcn, "401 %s %s :Nickname not in server database." % (ctcn.nick, nick))
+		source.ctcn.message("401 %s %s :Nickname not in server database." % (source.nick, nick))
 		return
 	user = srv.clients[nick]
 	
 	# can't kick users who are protected (have +q usermode)
 	if user.has_mode('q'):
-		srv.send_msg(ctcn, "481 %s :Can't kick protected users." % ctcn.nick)
+		source.ctcn.message("481 %s :Can't kick protected users." % source.nick)
 		return
 	
 	# user must already be in the channel
 	if not user in channel.members:
-		srv.send_msg(ctcn, "482 %s %s :User is not in channel." % (ctcn.nick, target))
+		source.ctcn.message("482 %s %s :User is not in channel." % (source.nick, target))
 		return
 	user_status = channel.members[user]
 	
 	# only channel operators can kick
-	if (not ctcn in channel.members) or (channel.members[ctcn] < 2**3 and (not user.has_mode('o'))):
-		srv.send_msg(ctcn, "482 %s %s :You must be a channel operator to use KICK." % (ctcn.nick, target))
+	if (not source in channel.members) or ((channel.members[source] < symbols.CHOPER) and not source.has_mode('o')):
+		source.ctcn.message("482 %s %s :You must be a channel operator to use KICK." % (source.nick, target))
 		return
 
 	# can't kick someone with higher access level
-	if channel.members[user] >= channel.members[ctcn]: return
+	if channel.members[user] >= channel.members[source]: return
 	
 	# apply the kick
-	srv.announce_channel(ctcn, channel, 'KICK %s %s :%s' % (target, nick, reason), ctcn.get_hostmask())
+	srv.announce_channel(channel, 'KICK %s %s :%s' % (target, nick, reason), source.hostmask())
 	channel.part(user)
-	
-	print "*", nick, "was kicked from from", target, "by", ctcn.nick
 	
 	

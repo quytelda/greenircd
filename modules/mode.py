@@ -9,9 +9,9 @@ import symbols
 __command__ = 'MODE'
 
 # MODE Syntax: (:prefix) MODE <target> (+/-)<flags> <params>...
-def handle_event(srv, ctcn, params):
+def handle_event(srv, source, params):
 	if len(params) < 1:
-		srv.send_numeric(ctcn, symbols.ERR_NEEDMOREPARAMS, "MODE :MODE requires at least one parameter.")
+		source.ctcn.numeric(symbols.ERR_NEEDMOREPARAMS, source.nick, "MODE :MODE requires at least one parameter.")
 		return
 
 	target = params[0]
@@ -19,24 +19,25 @@ def handle_event(srv, ctcn, params):
 	# the MODE command is handled separately for users and channels
 	# so, determine what type of target we are dealing with
 	if target in srv.channels:
-		channel_mode(srv, ctcn, srv.channels[target], params[1:])
+		channel_mode(srv, source, srv.channels[target], params[1:])
 	elif target in srv.clients:
-		user_mode(srv, ctcn, srv.clients[target], params[1:])
+		user_mode(srv, source, srv.clients[target], params[1:])
 	else: # the target doesn't exists
-		srv.send_numeric(ctcn, symbols.ERR_NOSUCHNICK, "%s :No such nick or channel." % target)
+		source.ctcn.numeric(symbols.ERR_NOSUCHNICK, source.nick, "%s :No such nick or channel." % target)
 
-def channel_mode(srv, ctcn, channel, params):
+def channel_mode(srv, source, channel, params):
 	# if only a target is provided,
 	# the command is treated as a query
-	if (len(params) < 1) or (params[0] == ''):
+	# TODO add parameters to reply
+	if len(params) < 1:
 		mode_str = symbols.parse_stack(channel.mode_stack, symbols.chan_modes)
-		srv.send_msg(ctcn, '324 %s %s +%s' % (ctcn.nick, channel.name, mode_str))
+		source.ctcn.numeric(symbols.RPL_CHANNELMODEIS, source.nick, '%s +%s' % (channel.name, mode_str))
 		
 		# after we've sent the query results, we are done
 		return
 	
 	# if the user is not a channel operator, we can go no further
-	if channel.members[ctcn] < 2**3 and not ctcn.has_mode('o'): return
+	if (channel.members[source] < symbols.CHOPER) and not source.has_mode('o'): return
 	
 	# if there more params (a list of flags),
 	# we will parse them, and send to the channels
@@ -62,9 +63,9 @@ def channel_mode(srv, ctcn, channel, params):
 			
 			# look up the mode
 			for status in symbols.status_modes.items():
-				if (status[1]['modechar'] == flag) and ((channel.members[ctcn] >= status[0]) or (ctcn.has_mode('o'))):
+				if (status[1]['modechar'] == flag) and ((channel.members[source] >= status[0]) or (source.has_mode('o'))):
 					channel.members[srv.clients[params[1]]] |= status[0]
-					srv.announce_channel(ctcn, channel, 'MODE %s +%s %s' % (channel.name, flag, params[1]), ctcn.get_hostmask())
+					srv.announce_channel(channel, 'MODE %s +%s %s' % (channel.name, flag, params[1]), source.hostmask())
 					del params[1]
 		# </END STATUS MODES>
 		
@@ -91,9 +92,9 @@ def channel_mode(srv, ctcn, channel, params):
 
 			# look up the mode
 			for status in symbols.status_modes.items():
-				if (status[1]['modechar'] == flag) and (channel.members[ctcn] >= status[0] or (ctcn.has_mode('o'))):
+				if (status[1]['modechar'] == flag) and (channel.members[source] >= status[0] or source.has_mode('o')):
 					channel.members[srv.clients[params[1]]] ^= status[0]
-					srv.announce_channel(ctcn, channel, 'MODE %s -%s %s' % (channel.name, flag, params[1]), ctcn.get_hostmask())
+					srv.announce_channel(channel, 'MODE %s -%s %s' % (channel.name, flag, params[1]), source.hostmask())
 					del params[1]
 
 		# subtract the mask from the channel mode
@@ -101,24 +102,25 @@ def channel_mode(srv, ctcn, channel, params):
 
 	# calculate negative mode changes
 	net_rem_flags += symbols.parse_stack(channel.mode_stack ^ tmp_stack, symbols.chan_modes)
-	net_mode = (net_add_flags if (net_add_flags) else '') + (net_rem_flags if (net_rem_flags) else '')
+	net_mode = (net_add_flags if (net_add_flags != '+') else '') + (net_rem_flags if (net_rem_flags != '-') else '')
 
 	# if any modes were actually changed, we announce it to the channel
 	if len(net_mode) > 0:
-		srv.announce_channel(ctcn, channel, 'MODE %s %s' % (channel.name, net_mode), ctcn.get_hostmask())
+		srv.announce_channel(channel, 'MODE %s %s' % (channel.name, net_mode), source.hostmask())
 
-def user_mode(srv, ctcn, user, params):
+def user_mode(srv, source, user, params):
 	# if only a target is provided,
 	# the command is treated as a query
-	if (len(params) < 1) or (params[0] == ''):
+	if len(params) < 1:
 		modestring = symbols.parse_stack(user.mode_stack, symbols.user_modes)
-		srv.send_msg(ctcn, '221 %s +%s' % (user.nick, modestring))
+		if len(modestring) > 0:
+			source.ctcn.numeric(symbols.RPL_UMODEIS, source.nick, '+%s' % modestring)
 		
 		# after we've sent the query results, we are done
 		return
 	
 	# users can only set modes on themselves
-	if user.nick != ctcn.nick: return
+	if user.nick != source.nick: return
 	
 	# if there more params (a list of flags),
 	# we will parse them, and send to the channel
@@ -135,7 +137,7 @@ def user_mode(srv, ctcn, user, params):
 		
 		# modes above XXX can't be added unless you already have greater privileges.
 		if (symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag]):
-			srv.send_msg(user, "481 %s :You don't have the correct priveleges to use this mode." % ctcn.nick)
+			srv.send_msg(user, "481 %s :You don't have the correct priveleges to use this mode." % source.nick)
 			print "*** %d : %d" % (user.mode_stack, symbols.user_modes[flag])
 			continue
 		
@@ -155,4 +157,4 @@ def user_mode(srv, ctcn, user, params):
 	#stack_diff = user.mode_stack ^ initial_stack
 	#print "* stack_diff:", symbols.parse_stack(stack_diff, symbols.user_modes)
 		
-	srv.send_msg(ctcn, 'MODE %s :%s' % (user.nick, net_mode), ctcn.get_hostmask())
+	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())

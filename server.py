@@ -3,13 +3,14 @@
 # Copyright (C) 2014 Quytelda Gaiwin
 #
 
-# TODO: server links
-# TODO: mode on connect setting
-# TODO: WHOWAS, finish WHO (regex filter, oper privs, etc)
-
 import sys
 
 from twisted.internet import reactor, endpoints
+
+from irc.connection import IRCConnection
+from irc.client import IRCClient
+from irc.server import IRCServer
+from irc.message import IRCMessage
 
 import connection
 import channel
@@ -17,46 +18,36 @@ import symbols
 import modules
 from modules import *
 
-class IRCServer:
-	"""IRCServer represents a running IRC server that accepts connections from clients and processes and executes commands from those clients.  It keeps track of (a) it's list of registered clients, (b) its list of existing channels, (c) its list of linked servers, and (d) all the metadata needed to run the service.  The server waits for incoming connections on the given port, and then passes them on to connection handlers (IRCConnection objects) when an external machine connects."""
-	version = 'GreenIRCDv0.1'
-	port = 6667
-	opers = []
-	autojoin = ''
-	operjoin = ''
-
-	def __init__(self):
-		self.clients = {}
-		self.servers = {}
-		self.hooks = {}
-		
+class Server:
+	"""Server represents a running IRC server that accepts connections from clients and processes and executes commands from those clients.  It keeps track of (a) it's list of registered clients, (b) its list of existing channels, (c) its list of linked servers, and (d) all the metadata needed to run the service.  The server waits for incoming connections on the given port, and then passes them on to connection handlers (IRCConnection objects) when an external machine connects."""
+	
+	# server globals
+	name = None # server name (doesn't need to match hostname)
+	version = 'GreenIRCDv1.0u' # version string
+	port = 6667 # port to list on
+	
+	clients = {} # list of clients by nick
+	servers = {} # list of servers by name
+	hooks = {}	# list of command hooks by command
+	channels = {} # list of channels by name (including prefixes)
+	
+	opers = [{'username' : "quytelda", 'auth' : "d54479b4c6a321aabd090a5b9fcf3a5e3240ad643a6f349c2f59ed10f3b703a4", 'flags' : "owqa"}] # list of oper entries
+	autojoin = '#green' # channel(s) to autojoin on connect
+	operjoin = '#opers' # channel(s) to autojoin on oper
+	
+	# we need a name to initialize the server
+	def __init__(self, name):
+		self.name = name
 		self.register_hooks()
-		
-		self.channels = {}
-		
-	def set_attribute(self, key, value):
-		"""Sets some configuration attribute for the server."""
-		if key == 'port':
-			self.port = int(value)
-		elif key == 'auto-join':
-			self.autojoin = value
-		elif key == 'oper-join':
-			self.operjoin = value
-		else:
-			print "Config Error: Unrecognized directive: %s" % key
 
 	def start(self):
-		"""Attempts to start the server and listen for connections."""
-		if not hasattr(self, 'name'):
-			print "FAIL: name not set!"
-			return
-		
+		"""Attempts to start the server and listen for connections."""		
 		self.endpoint = endpoints.TCP4ServerEndpoint(reactor, self.port)
-		self.endpoint.listen(connection.IRCConnectionFactory(self))
+		self.endpoint.listen(connection.ConnectionFactory(self))
 		reactor.run()
 		
 	def register_hooks(self):
-		"""Registers a command hook from a module."""
+		"""Finds and registers all command hooks from the correct package."""
 		for module in dir(modules):
 			if module.startswith('__'): continue
 			
@@ -70,119 +61,79 @@ class IRCServer:
 			
 			self.hooks[mod.__command__] = mod.handle_event
 
-	def register_client(self, ctcn):
-		"""Registers a client with the server."""
-		self.clients[ctcn.nick] = ctcn
+	def register_connection(self, ctcn):
+		return
+			
+	def register_client(self, client, welcome = True):
+		if not isinstance(client, IRCClient) or (client.nick == None):
+			return
+
+		self.clients[client.nick] = client
+		if welcome: self.welcome_client(client)
 		
+	def unregister_client(self, client):
+		"""Attempts to reverse the effects of registering a client with the server."""
+		if not isinstance(client, IRCClient) or (client.nick == None) or (not client.nick in self.clients):
+			return
+
+		del self.clients[client.nick]
+	
+	def update_client(self, client, old_nick):
+		if not isinstance(client, IRCClient) or (client.nick == None):
+			return
+
+		if (old_nick != None) and (old_nick in self.clients):
+			del self.clients[old_nick]
+
+		self.register_client(client, welcome = (old_nick == None))
+
+	def welcome_client(self, client):
 		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
 		chan_prefixes = [symbols.status_modes[x]['prefix'] for x in sorted(symbols.status_modes, reverse=True)]
-		
-		# send welcome info
-		self.send_msg(ctcn, '001 %s :Welcome to %s, %s' % (ctcn.nick, self.name, ctcn.get_hostmask()))
-		self.send_msg(ctcn, '002 %s :You host is %s, running GreenIRCDv0.1' % (ctcn.nick, self.name))
-		self.send_msg(ctcn, '004 %s %s %s %s %s' % (ctcn.nick, self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
-		self.send_msg(ctcn, '005 %s PREFIX=(%s)%s :are supported' % (ctcn.nick, ''.join(chan_modes), ''.join(chan_prefixes)))
-		
-		# set initial client state
-		# set modes (initially just 'x', indicating cloaked addresses)
-		setattr(ctcn, 'mode_stack', symbols.user_modes['x'])
-		# if there is any channels to autojoin, join them
-		if len(self.autojoin) > 0:
-			modules.join.handle_event(self, ctcn, [self.autojoin])
 
-	def register_server(ctcn):
-		"""Registers a linked server."""
-		self.servers.append(ctcn)
+		client.ctcn.numeric(symbols.RPL_WELCOME, client.nick, "Welcome to %s, %s!" % (self.name, client.nick))
+		client.ctcn.numeric(symbols.RPL_YOURHOST, client.nick, ':Your host is %s, running version %s' % (self.name, self.version))
+		client.ctcn.numeric(symbols.RPL_MYINFO, client.nick, '%s %s %s %s' % (self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
+		client.ctcn.numeric(symbols.RPL_ISUPPORT, client.nick, 'PREFIX=(%s)%s :are supported' % (''.join(chan_modes), ''.join(chan_prefixes)))
 		
-		return self
+		# autojoin channels in the autojoin list
+		if len(self.autojoin) > 0:
+			modules.join.handle_event(self, client, [self.autojoin])
 		
-	def unregister_connection(self, ctcn):
-		"""Attempts to reverse the effects of registering a client with the server."""
-		if hasattr(ctcn, 'nick') and ctcn.nick in self.clients: # a client lost connection
-			# remove the user from all channels
-			for chan in self.channels:
-				channel = self.channels[chan]
-				if ctcn in channel.members:
-					channel.quit(ctcn)
+	def announce(self, msg, prefix, exclude = None):
+		"""Sends a message to every client registered with the server"""
+		for client in self.clients.values():
+			if client == exclude: continue
+			print "*** messaging", client.nick
+			client.ctcn.message(msg, prefix)
 			
-			# remove the user from the server
-			del self.clients[ctcn.nick]
+	def announce_channel(self, channel, msg, prefix, exclude = None):
+		"""Sends a message to every client in the channel"""
+		for client in channel.members:
+			if client == exclude: continue
+			client.ctcn.message(msg, prefix)
 			
-		print "* client unregistered"
-		
-	def handle_message(self, ctcn, data):
+	def announce_common(self, client, msg, prefix, exclude = None):
+		for channel in self.channels.values():
+			if client in channel.members:
+				self.announce_channel(channel, msg, prefix, exclude)
+
+	# TODO command vs numeric vs garbage
+	def handle_message(self, source, data):
 		"""Handles and incoming message from a connection.  Usually, this will just pass it on to the command handler."""
-		command = data.strip()
-		msg = IRCMessage(command)
 		
-		self.do_command(ctcn, msg)
+		message = data.strip()
 		
-	def do_command(self, ctcn, msg):
+		# attempt to parse the message
+		msg = IRCMessage(message)
+		self.do_command(source, msg)
+		
+	def do_command(self, source, msg):
 		"""Attempts to execute a command with the corresponding command handle (loaded as a module with a handle_event method)."""
 		# attempt to handle the command with the correct hook module
 		if msg.command.upper() in self.hooks:
-			self.hooks[msg.command.upper()](self, ctcn, msg.params)
+			hook = self.hooks[msg.command.upper()]
+			if (not source in self.clients.values()) and (not 'preregister' in dir(sys.modules[hook.__module__])):
+				source.ctcn.numeric(symbols.ERR_NOTREGISTERED, None, ":You are not registered.")
 
-	def send_msg(self, ctcn, msg, prefix = None):
-		"""Sends a message to the connection, appropriately padded with CRLF, and prefixed with this server's name or the contents of the prefix parameter, if included."""
-		ctcn.transport.write(':%s %s\r\n' % (self.name if (prefix == None) else prefix, msg))
-	
-	def send_numeric(self, ctcn, numeric, msg, prefix = None):
-		"""Sends a numeric reply to the given connection."""
-		self.send_msg(ctcn, '%s %s %s' % (numeric, ctcn.nick, msg), prefix)
-		
-	def announce(self, ctcn, msg, prefix = None, exclude = False):
-		"""Sends a message to ALL the connections registered on this server, appropriately padded and prefixed by send_msg."""
-		# send this message to every client we have registered
-		for client in self.clients.values():
-			if (not exclude) or (ctcn != client) or (not client.nick in self.clients):
-				self.send_msg(client, msg, prefix)
-			
-	def announce_common(self, ctcn, msg, prefix = None, exclude = False):
-		"""Sends a message to all clients that have at least one channel in common with the provided connection, properly formatted by send_msg.  If the exclude parameter is true (it is false by default), the message will *not* be sent to ctcn."""
-		for chan in self.channels:
-			if ctcn in self.channels[chan].members:
-				self.announce_channel(ctcn, self.channels[chan], msg, prefix, exclude)
-
-	def announce_channel(self, ctcn, channel, msg, prefix = None, exclude = False):
-		"""Sends a message to all the members of a channel, properly formatted by send_msg."""
-		# send this message to all members of a channel
-		for user in channel.members:
-			if (not exclude) or (user != ctcn) or (not user in self.clients.values()):
-				self.send_msg(self.clients[user.nick], msg, prefix)		
-		
-class IRCMessage:
-	def __init__(self, raw_msg = None):
-		# parse raw_msg, if provided
-		if raw_msg == None: return
-		
-		# first, split the command into its space-separated components
-		components = raw_msg.split(' ')
-		
-		ptr = 0
-		# first, determine the source of the message
-		if(components[ptr].startswith(':')): # there is a prefix
-			self.source = components[ptr][1:]
-			print "Source:", self.source
-			ptr = ptr + 1
-		
-		# then, parse the command
-		self.command = components[ptr]
-		print "Command:", self.command
-		ptr = ptr + 1
-		
-		# next, parse the arguments
-		# they are either trailing (following ':') or middle
-		self.params = []
-		for i in range(ptr, len(components)):
-			if not components[i].startswith(':'):
-				self.params.append(components[i])
-			else: # trailing arguments
-				self.params.append((' '.join(components[i:]))[1:])
-				
-		print "Params:", self.params
-		
-class OperEntry:
-	def __init__(self, username, auth):
-		self.username = username
-		self.auth = auth
+			hook(self, source, msg.params)
