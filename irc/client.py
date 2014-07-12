@@ -10,6 +10,7 @@ class IRCClient(irc.connection.IRCConnection):
 	username = None
 	vhost = None
 	mode_stack = 0
+	away = False
 
 	def __init__(self, server, ctcn, username, nick = None):
 		irc.connection.IRCConnection.__init__(self, server, ctcn)

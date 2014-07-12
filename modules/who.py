@@ -22,8 +22,9 @@ def global_who(srv, source):
 		ismem = (source in channel.members)
 		for user in channel.members:
 			if user.has_mode('i') and (not ismem) and (user != source): continue
-		
-			source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, '%s %s %s %s %s %s :0 %s' % (channel.name, user.username, user.host(), srv.name, user.nick, 'H', 'REALNAME'))
+
+			status = ('G' if user.away else 'H') + ('*' if user.has_mode('o') else '') + (channel.prefix(user)[:1])
+			source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, '%s %s %s %s %s %s :0 %s' % (channel.name, user.username, user.host(), srv.name, user.nick, status, 'REALNAME'))
 		
 	source.ctcn.numeric(symbols.RPL_ENDOFWHO, source.nick, "* :End of WHO list")
 	
@@ -31,6 +32,7 @@ def channel_who(srv, source, channel):
 	ismem = (source in channel.members)
 	for user in channel.members:
 		if user.has_mode('i') and (not ismem) and (user != source): continue
-		source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, "%s %s %s %s %s %s :0 REALNAME" % (channel.name, user.username, user.host(), user.server.name, user.nick, 'H') )
+		status = ('G' if user.away else 'H') + ('*' if user.has_mode('o') else '') + (channel.prefix(user)[:1])
+		source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, "%s %s %s %s %s %s :0 REALNAME" % (channel.name, user.username, user.host(), user.server.name, user.nick, status) )
 		
 	source.ctcn.numeric(symbols.RPL_ENDOFWHO, source.nick, "%s :End of WHO list" % channel.name)

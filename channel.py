@@ -10,14 +10,12 @@ import symbols
 # This class represents an IRC channel
 #			
 class IRCChannel:
-	name = None
-	mode_stack = 0
-	topic = ''
-	limit = 30
-	members = {}
-
 	def __init__(self, name):
 		self.name = name
+		self.mode_stack = 0
+		self.topic = ''
+		self.limit = 30
+		self.members = {}
 	
 	def join(self, client):
 		"""Adds a client as a member in the channel.  If they are the first, they get ops (+qo)."""

@@ -42,7 +42,7 @@ def handle_event(srv, user, params):
 	net_modes = "+" + symbols.parse_stack(user.mode_stack ^ orig_stack, symbols.user_modes)
 
 	# send the confirmation messages to the user
-	user.ctcn.message('MODE %s :+%s' % (user.nick, net_modes), user.hostmask())
+	user.ctcn.message('MODE %s :%s' % (user.nick, net_modes), user.hostmask())
 	user.ctcn.message('381 %s :%s' % (user.nick, '*** Logged in as IRC Operator ***'))
 
 	# if there are channels for opers to autojoin, join them

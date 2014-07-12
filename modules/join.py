@@ -43,7 +43,7 @@ def handle_event(srv, source, params):
 	if not target in srv.channels:
 		srv.channels[target] = IRCChannel(target)
 	channel = srv.channels[target]
-	
+
 	# if the user is already in the channel, ignore
 	if source in channel.members: return
 	
@@ -55,7 +55,7 @@ def handle_event(srv, source, params):
 	
 	# if the channel is oper only (+O), only server operators can join
 	if channel.has_mode('O') and (source.mode_stack < symbols.user_modes['o']):
-		srv.send_numeric(ctcn, symbols.ERR_NOPRIVILEGES, ":Only server operators can join.")
+		source.ctcn.numeric(symbols.ERR_NOPRIVILEGES, source.nick, ":Only server operators can join.")
 		return
 
 	# join the user
