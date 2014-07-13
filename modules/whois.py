@@ -25,8 +25,8 @@ def handle_event(srv, source, params):
 	
 	# send the information summary
 	# TODO: real name, server info
-	source.ctcn.numeric(symbols.RPL_WHOISUSER, source.nick, "%s %s %s * :%s" % (user.nick, user.username, user.host(cloak), 'REALNAME'))
-	source.ctcn.numeric(symbols.RPL_WHOISSERVER, source.nick, "%s %s :%s" % (user.nick, user.server.name, 'SERVERINFO'))
+	source.ctcn.numeric(symbols.RPL_WHOISUSER, source.nick, "%s %s %s * :%s" % (user.nick, user.username, user.host(cloak), user.real_name))
+	source.ctcn.numeric(symbols.RPL_WHOISSERVER, source.nick, "%s %s :%s" % (user.nick, user.server.name, srv.info))
 	
 	chans = []
 	

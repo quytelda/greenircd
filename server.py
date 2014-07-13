@@ -25,6 +25,7 @@ class Server:
 	name = None # server name (doesn't need to match hostname)
 	version = 'GreenIRCDv1.0u' # version string
 	port = 6667 # port to list on
+	info = "Tamalin (http://www.tamalin.org) GreenIRCd"
 	
 	clients = {} # list of clients by nick
 	servers = {} # list of servers by name
@@ -95,7 +96,10 @@ class Server:
 		client.ctcn.numeric(symbols.RPL_YOURHOST, client.nick, ':Your host is %s, running version %s' % (self.name, self.version))
 		client.ctcn.numeric(symbols.RPL_MYINFO, client.nick, '%s %s %s %s' % (self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
 		client.ctcn.numeric(symbols.RPL_ISUPPORT, client.nick, 'PREFIX=(%s)%s :are supported' % (''.join(chan_modes), ''.join(chan_prefixes)))
-		
+
+		# set welcome modes
+		modules.mode.handle_event(self, client, [client.nick, '+ix'])
+
 		# autojoin channels in the autojoin list
 		if len(self.autojoin) > 0:
 			modules.join.handle_event(self, client, [self.autojoin])

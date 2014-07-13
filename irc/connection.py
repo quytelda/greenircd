@@ -3,6 +3,7 @@
 #
 
 import socket
+import hashlib
 
 class IRCConnection:
 	ctcn = None
@@ -20,7 +21,8 @@ class IRCConnection:
 		
 	# TODO implement cloaking
 	def host(self, cloak = True):
-		return self.ctcn.host['hostname'] if (self.ctcn.host['hostname'] != None) else self.ctcn.host['ip']
-		
+		rhost = self.ctcn.host['hostname'] if (self.ctcn.host['hostname'] != None) else self.ctcn.host['ip']
+		return rhost
+
 	def terminate(self):
 		self.ctcn.transport.loseConnection()
