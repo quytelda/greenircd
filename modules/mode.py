@@ -42,8 +42,8 @@ def channel_mode(srv, source, channel, params):
 	# if there more params (a list of flags),
 	# we will parse them, and send to the channels
 	flags = params[0]
-	add_flags = re.sub('\-[a-zA-Z]*', '', flags)[1:]
-	rem_flags = re.sub('\+[a-zA-Z]*', '', flags)[1:]
+	add_flags = re.sub('\-[a-zA-Z]*', '', flags)[1:] if ('+' in flags) else ''
+	rem_flags = re.sub('\+[a-zA-Z]*', '', flags)[1:] if ('-' in flags) else ''
 	
 	# net_mode accumulates the actual changes applied to the mode
 	net_add_flags = '+'

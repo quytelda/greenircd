@@ -32,6 +32,7 @@ RPL_TOPIC = 332 # <channel> :<topic>
 RPL_WHOREPLY = 352 # <channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real_name>
 RPL_NAMREPLY = 353 # ( '=' / '*' / '@' ) <channel> ' ' : [ '@' / '+' ] <nick> *( ' ' [ '@' / '+' ] <nick> )
 RPL_ENDOFNAMES = 366 # <channel> :<info>
+RPL_REHASHING = 382 # <config_file> :<info>
 ERR_NOSUCHNICK = 401 # <nick> :<reason>
 ERR_NOSUCHCHANNEL = 403 # <channel> :<reason>
 ERR_CANNOTSENDTOCHAN = 404 # <channel> :<reason>

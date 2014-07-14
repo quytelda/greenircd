@@ -23,18 +23,21 @@ class Server:
 	
 	# server globals
 	name = None # server name (doesn't need to match hostname)
-	version = 'GreenIRCDv1.0u' # version string
+	version = 'GreenIRCDv0.1u' # version string
 	port = 6667 # port to list on
-	info = "Tamalin (http://www.tamalin.org) GreenIRCd"
+	info = version
+	config = None
 	
 	clients = {} # list of clients by nick
 	servers = {} # list of servers by name
 	hooks = {}	# list of command hooks by command
 	channels = {} # list of channels by name (including prefixes)
 	
-	opers = [{'username' : "quytelda", 'auth' : "d54479b4c6a321aabd090a5b9fcf3a5e3240ad643a6f349c2f59ed10f3b703a4", 'flags' : "owqa"}] # list of oper entries
+	opers = [] # list of oper entries
 	autojoin = '#green' # channel(s) to autojoin on connect
 	operjoin = '#opers' # channel(s) to autojoin on oper
+	
+	connect_modes = 'ix'
 	
 	# we need a name to initialize the server
 	def __init__(self, name):
@@ -98,7 +101,7 @@ class Server:
 		client.ctcn.numeric(symbols.RPL_ISUPPORT, client.nick, 'PREFIX=(%s)%s :are supported' % (''.join(chan_modes), ''.join(chan_prefixes)))
 
 		# set welcome modes
-		modules.mode.handle_event(self, client, [client.nick, '+ix'])
+		modules.mode.handle_event(self, client, [client.nick, '+' + self.connect_modes])
 
 		# autojoin channels in the autojoin list
 		if len(self.autojoin) > 0:
