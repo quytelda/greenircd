@@ -15,7 +15,6 @@ def handle_event(srv, source, params):
 	message = params[1]
 	
 	if target in srv.channels: # this is a channel message
-		print "* channel notice", message
 		channel = srv.channels[target]
 		
 		# can't send external messages in +n channels
@@ -31,7 +30,8 @@ def handle_event(srv, source, params):
 		srv.announce_channel(channel, 'NOTICE %s :%s' % (target, message), source.hostmask(), exclude = True)
 		
 	elif target in srv.clients: # this is a private notice
-		srv.send_msg(srv.clients[target], 'NOTICE %s :%s' % (target, message), source.hostmask())
+		user = srv.clients[target]
+		user.ctcn.message('NOTICE %s :%s' % (target, message), source.hostmask())
 	else:
 		source.ctcn.message("401 %s %s :Not a known nick or channel" % (source.nick, target))
 		

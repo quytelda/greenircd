@@ -111,7 +111,6 @@ class Server:
 		"""Sends a message to every client registered with the server"""
 		for client in self.clients.values():
 			if client == exclude: continue
-			print "*** messaging", client.nick
 			client.ctcn.message(msg, prefix)
 			
 	def announce_channel(self, channel, msg, prefix, exclude = None):

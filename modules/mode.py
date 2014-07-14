@@ -138,7 +138,6 @@ def user_mode(srv, source, user, params):
 		# modes above XXX can't be added unless you already have greater privileges.
 		if (symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag]):
 			srv.send_msg(user, "481 %s :You don't have the correct priveleges to use this mode." % source.nick)
-			print "*** %d : %d" % (user.mode_stack, symbols.user_modes[flag])
 			continue
 		
 		# apply the mask to the channel mode
@@ -153,8 +152,5 @@ def user_mode(srv, source, user, params):
 		user.mode_stack ^= symbols.user_modes[flag]
 		
 	net_mode += '-' + symbols.parse_stack(user.mode_stack ^ tmp_stack, symbols.user_modes)
-		
-	#stack_diff = user.mode_stack ^ initial_stack
-	#print "* stack_diff:", symbols.parse_stack(stack_diff, symbols.user_modes)
 		
 	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())

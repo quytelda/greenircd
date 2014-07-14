@@ -30,6 +30,3 @@ def handle_event(srv, source, params):
 	client = IRCClient(srv, source.ctcn, username, nick)
 	client.real_name = realname
 	srv.register_client(client)
-
-	print srv.clients
-	print client.nick, client.username

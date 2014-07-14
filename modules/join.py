@@ -60,8 +60,6 @@ def handle_event(srv, source, params):
 
 	# join the user
 	channel.join(source)
-	
-	print srv.channels.keys()
 
 	# send announcement, and confirmation
 	srv.announce_channel(channel, 'JOIN :%s' % target, source.hostmask())
