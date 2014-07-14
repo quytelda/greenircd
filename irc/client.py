@@ -13,6 +13,7 @@ class IRCClient(irc.connection.IRCConnection):
 	real_name = None
 	mode_stack = 0
 	away = False
+	away_reason = None
 
 	def __init__(self, server, ctcn, username, nick = None):
 		irc.connection.IRCConnection.__init__(self, server, ctcn)
@@ -21,8 +22,8 @@ class IRCClient(irc.connection.IRCConnection):
 
 	def host(self, cloak = True):
 		rhost = self.ctcn.host['hostname'] if (self.ctcn.host['hostname'] != None) else self.ctcn.host['ip']
-		if self.has_mode('t') and (vhost != None):
-			return vhost
+		if self.has_mode('t') and (self.vhost != None):
+			return self.vhost
 		elif self.has_mode('x') and cloak:
 			return self.gencloak(rhost)
 		else:

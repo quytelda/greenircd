@@ -18,21 +18,23 @@ def handle_event(srv, source, params):
 		channel_who(srv, source, srv.channels[params[0]])
 	
 def global_who(srv, source):
+	cloak = not source.has_mode('o')
 	for channel in srv.channels.values():
 		ismem = (source in channel.members)
 		for user in channel.members:
 			if user.has_mode('i') and (not ismem) and (user != source): continue
 
 			status = ('G' if user.away else 'H') + ('*' if user.has_mode('o') else '') + (channel.prefix(user)[:1])
-			source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, '%s %s %s %s %s %s :0 %s' % (channel.name, user.username, user.host(), srv.name, user.nick, status, user.real_name))
+			source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, '%s %s %s %s %s %s :0 %s' % (channel.name, user.username, user.host(cloak), srv.name, user.nick, status, user.real_name))
 		
 	source.ctcn.numeric(symbols.RPL_ENDOFWHO, source.nick, "* :End of WHO list")
 	
 def channel_who(srv, source, channel):
+	cloak = not source.has_mode('o')
 	ismem = (source in channel.members)
 	for user in channel.members:
 		if user.has_mode('i') and (not ismem) and (user != source): continue
 		status = ('G' if user.away else 'H') + ('*' if user.has_mode('o') else '') + (channel.prefix(user)[:1])
-		source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, "%s %s %s %s %s %s :0 %s" % (channel.name, user.username, user.host(), user.server.name, user.nick, status, user.real_name) )
+		source.ctcn.numeric(symbols.RPL_WHOREPLY, source.nick, "%s %s %s %s %s %s :0 %s" % (channel.name, user.username, user.host(cloak), user.server.name, user.nick, status, user.real_name) )
 		
 	source.ctcn.numeric(symbols.RPL_ENDOFWHO, source.nick, "%s :End of WHO list" % channel.name)

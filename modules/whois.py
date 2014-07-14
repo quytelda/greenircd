@@ -24,7 +24,6 @@ def handle_event(srv, source, params):
 	cloak = not (source.has_mode('o') or user == source)
 	
 	# send the information summary
-	# TODO: real name, server info
 	source.ctcn.numeric(symbols.RPL_WHOISUSER, source.nick, "%s %s %s * :%s" % (user.nick, user.username, user.host(cloak), user.real_name))
 	source.ctcn.numeric(symbols.RPL_WHOISSERVER, source.nick, "%s %s :%s" % (user.nick, user.server.name, srv.info))
 	
@@ -37,7 +36,10 @@ def handle_event(srv, source, params):
 	
 	if len(chans) > 0:
 		source.ctcn.numeric(symbols.RPL_WHOISCHANNELS, source.nick, "%s :%s" % (user.nick, ' '.join(chans)))
-	
-	if user.has_mode('o'):
-		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server operator [+%s]" % (user.nick, symbols.parse_stack(user.mode_stack, symbols.user_modes)))
+
+	if user.has_mode('a'):
+		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server administrator" % user.nick)	
+	elif user.has_mode('o'):
+		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server operator" % user.nick)
+
 	source.ctcn.numeric(symbols.RPL_ENDOFWHOIS, source.nick, "%s :END OF WHOIS" % user.nick)
