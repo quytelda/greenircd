@@ -26,6 +26,7 @@ class Server:
 	version = 'GreenIRCDv0.1u' # version string
 	port = 6667 # port to list on
 	info = version
+	admin_email = None
 	config = None
 	
 	clients = {} # list of clients by nick
@@ -92,13 +93,9 @@ class Server:
 		self.register_client(client, welcome = (old_nick == None))
 
 	def welcome_client(self, client):
-		chan_modes = [symbols.status_modes[x]['modechar'] for x in sorted(symbols.status_modes, reverse=True)]
-		chan_prefixes = [symbols.status_modes[x]['prefix'] for x in sorted(symbols.status_modes, reverse=True)]
-
+		# send the welcome information
 		client.ctcn.numeric(symbols.RPL_WELCOME, client.nick, "Welcome to %s, %s!" % (self.name, client.nick))
-		client.ctcn.numeric(symbols.RPL_YOURHOST, client.nick, ':Your host is %s, running version %s' % (self.name, self.version))
-		client.ctcn.numeric(symbols.RPL_MYINFO, client.nick, '%s %s %s %s' % (self.name, self.version, ''.join(symbols.user_modes.keys()), ''.join(symbols.chan_modes.keys())))
-		client.ctcn.numeric(symbols.RPL_ISUPPORT, client.nick, 'PREFIX=(%s)%s :are supported' % (''.join(chan_modes), ''.join(chan_prefixes)))
+		modules.version.handle_event(self, client, [])
 
 		# set welcome modes
 		modules.mode.handle_event(self, client, [client.nick, '+' + self.connect_modes])
