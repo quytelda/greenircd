@@ -152,5 +152,9 @@ def user_mode(srv, source, user, params):
 		user.mode_stack ^= symbols.user_modes[flag]
 		
 	net_mode += '-' + symbols.parse_stack(user.mode_stack ^ tmp_stack, symbols.user_modes)
+	
+	# clean the mode change string by removing extraneous + and -
+	net_mode = re.sub(r'\+(?:($|\+|-))', r'\1', net_mode)
+	net_mode = re.sub(r'\-+(?:($|\+|-))', r'\1', net_mode)
 		
 	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())

@@ -13,7 +13,7 @@ def handle_event(srv, source, params):
 	is registered, it will be unregistered from the server.
 	Closing of the actual socket occurs last (after the client is unregistered).
 	"""
-	msg = "Leaving" if (len(params) < 1) else params[0]
+	msg = source.nick if (len(params) < 1) else params[0]
 
 	# announce the quit event
 	# TODO make this in-channel
