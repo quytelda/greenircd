@@ -3,10 +3,10 @@
 #
 import os
 import hashlib
-import json
 
 import symbols
 import modules.join
+import modules.sendsno
 
 __command__ = 'OPER'
 
@@ -44,6 +44,7 @@ def handle_event(srv, user, params):
 	# send the confirmation messages to the user
 	user.ctcn.message('MODE %s :%s' % (user.nick, net_modes), user.hostmask())
 	user.ctcn.message('381 %s :%s' % (user.nick, '*** Logged in as IRC Operator ***'))
+	modules.sendsno.handle_event(srv, user, ['s', 'Notice: Oper-up by %s.' % user.hostmask()])
 
 	# if there are channels for opers to autojoin, join them
 	if len(srv.operjoin) > 0:

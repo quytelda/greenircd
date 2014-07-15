@@ -1,1 +1,1 @@
-__all__ = ["version", "admin", "quit", "nick", "user", "privmsg", "join", "part", "names", "topic", "mode", "kick", "notice", "list", "oper", "kill", "wallops", "who", "whois", "rehash", "chghost", "away", "cap"]
+__all__ = ["version", "admin", "quit", "nick", "user", "privmsg", "join", "part", "names", "topic", "mode", "kick", "notice", "list", "oper", "kill", "wallops", "who", "whois", "rehash", "chghost", "away", "cap", "sendsno"]

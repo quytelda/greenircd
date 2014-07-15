@@ -65,16 +65,15 @@ class Server:
 				print "** FAIL: unable to load '%s' because __command__ is not set." % module
 			
 			self.hooks[mod.__command__] = mod.handle_event
-
-	def register_connection(self, ctcn):
-		return
 			
 	def register_client(self, client, welcome = True):
 		if not isinstance(client, IRCClient) or (client.nick == None):
 			return
 
 		self.clients[client.nick] = client
-		if welcome: self.welcome_client(client)
+		if welcome:
+			self.welcome_client(client)
+			sendsno.handle_event(self, None, ['s', "Notice: New client has registered on this server (%s)." % client.hostmask()])
 		
 	def unregister_client(self, client):
 		"""Attempts to reverse the effects of registering a client with the server."""
