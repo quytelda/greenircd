@@ -37,7 +37,8 @@ def channel_mode(srv, source, channel, params):
 		return
 	
 	# if the user is not a channel operator, we can go no further
-	if (channel.members[source] < symbols.CHOPER) and not source.has_mode('o'): return
+	# however, if they have override permission, we allow it
+	if (channel.members[source] < symbols.CHOPER) and not source.has_mode('Q'): return
 	
 	# if there more params (a list of flags),
 	# we will parse them, and send to the channels
@@ -137,7 +138,7 @@ def user_mode(srv, source, user, params):
 		
 		# modes above XXX can't be added unless you already have greater privileges.
 		if (symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag]):
-			srv.send_msg(user, "481 %s :You don't have the correct priveleges to use this mode." % source.nick)
+			source.ctcn.message("481 %s :You don't have the correct priveleges to use this mode." % source.nick)
 			continue
 		
 		# apply the mask to the channel mode
@@ -156,5 +157,6 @@ def user_mode(srv, source, user, params):
 	# clean the mode change string by removing extraneous + and -
 	net_mode = re.sub(r'\+(?:($|\+|-))', r'\1', net_mode)
 	net_mode = re.sub(r'\-+(?:($|\+|-))', r'\1', net_mode)
-		
+	
+	# send the mode change message
 	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())

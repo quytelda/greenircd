@@ -44,7 +44,8 @@ def handle_event(srv, source, params):
 	user_status = channel.members[user]
 	
 	# only channel operators can kick
-	if (not source in channel.members) or ((channel.members[source] < symbols.CHOPER) and not source.has_mode('o')):
+	# however, users with override permission are allowed to kick without becoming chanops
+	if (not source in channel.members) or ((channel.members[source] < symbols.CHOPER) and not source.has_mode('Q')):
 		source.ctcn.message("482 %s %s :You must be a channel operator to use KICK." % (source.nick, target))
 		return
 

@@ -74,14 +74,19 @@ chan_modes = {
 }
 
 user_modes = {
-	'i' : 2**0,
-	'x' : 2**1,
-	'w' : 2**2,
-	't' : 2**3,
-	'o' : 2**4,
-	'W' : 2**5, # XXX I don't like this one
-	'q' : 2**6,
-	'a' : 2**10
+	'i' : 2**0, # invisible
+	'x' : 2**1, # cloaked host
+	'w' : 2**2, # receives Wallops
+	't' : 2**3, # using vhost
+	'p' : 2**4, # hides channels
+	's' : 2**5, # receives server notices
+	'z' : 2**6, # using SSL
+	'o' : 2**10, # local operator
+	'O' : 2**11, # global operator
+	'q' : 2**12, # protected
+	'Q' : 2**13, # can override
+	'a' : 2**14, # local administrator
+	'A' : 2**15 # network administrator
 }
 
 def parse_stack(stack, modes):
