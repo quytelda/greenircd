@@ -36,9 +36,13 @@ def handle_event(srv, source, params):
 	
 	if len(chans) > 0:
 		source.ctcn.numeric(symbols.RPL_WHOISCHANNELS, source.nick, "%s :%s" % (user.nick, ' '.join(chans)))
-
-	if user.has_mode('a'):
-		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server administrator" % user.nick)	
+	
+	if user.has_mode('A'):
+		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a global administrator" % user.nick)
+	elif user.has_mode('a'):
+		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server administrator" % user.nick)
+	elif user.has_mode('O'):
+		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a global operator" % user.nick)	
 	elif user.has_mode('o'):
 		source.ctcn.numeric(symbols.RPL_WHOISOPERATOR, source.nick, "%s :is a server operator" % user.nick)
 

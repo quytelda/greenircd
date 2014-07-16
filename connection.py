@@ -15,11 +15,8 @@ from twisted.protocols.basic import LineReceiver
 import irc.connection
 
 class Connection(LineReceiver):
-	host = {'ip' : None, 'hostname' : None}
-	server = None
-	container = None
-
 	def __init__(self, server):
+		self.host = {'ip' : None, 'hostname' : None}
 		self.server = server
 		self.container = irc.connection.IRCConnection(server, self)
 

@@ -5,4 +5,5 @@
 import irc
 
 class IRCServer(irc.connection.IRCConnection):
-	ulined = False
+	def __init__(self):
+		self.ulined = False

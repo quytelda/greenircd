@@ -7,16 +7,14 @@ import symbols
 import hashlib
 
 class IRCClient(irc.connection.IRCConnection):
-	nick = None
-	username = None
-	vhost = None
-	real_name = None
-	mode_stack = 0
-	away = False
-	away_reason = None
 
 	def __init__(self, server, ctcn, username, nick = None):
 		irc.connection.IRCConnection.__init__(self, server, ctcn)
+		self.vhost = None
+		self.real_name = None
+		self.mode_stack = 0
+		self.away = False
+		self.away_reason = None
 		self.username = username
 		self.nick = nick
 

@@ -5,10 +5,7 @@
 import socket
 import hashlib
 
-class IRCConnection:
-	ctcn = None
-	server = None
-	
+class IRCConnection:	
 	def __init__(self, server, ctcn):
 		self.ctcn = ctcn
 		self.server = server
