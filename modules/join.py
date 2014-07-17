@@ -41,7 +41,7 @@ def handle_event(srv, source, params):
 
 	# if we are the first to join the channel, then create it
 	if not target in srv.channels:
-		srv.channels[target] = IRCChannel(target)
+		srv.channels[target] = IRCChannel(target, srv)
 	channel = srv.channels[target]
 
 	# if the user is already in the channel, ignore

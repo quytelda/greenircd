@@ -23,9 +23,9 @@ class Connection(LineReceiver):
 		self.server = server
 		self.container = irc.connection.IRCConnection(server, self)
 		self.alive = True
-		
-		live = task.LoopingCall(self.check_alive)
-		live.start(20)
+
+		self.alive_timer = task.LoopingCall(self.check_alive)
+		self.alive_timer.start(30)
 
 	# this hook is called when a peer has initiated a connection
 	# first we need to resolve the connection details
@@ -58,9 +58,9 @@ class Connection(LineReceiver):
 		# ping the client
 		if isinstance(self.container, irc.client.IRCClient):
 			self.transport.write("PING :%s\r\n" % self.server.name)
-		
+
 		self.alive = False
-		
+
 	def message(self, msg, prefix = None):
 		self.transport.write(":%s %s\r\n" % (prefix if (prefix != None) else self.server.name, msg))
 		

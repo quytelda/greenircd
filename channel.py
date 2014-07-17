@@ -10,8 +10,9 @@ import symbols
 # This class represents an IRC channel
 #			
 class IRCChannel:
-	def __init__(self, name):
+	def __init__(self, name, server):
 		self.name = name
+		self.server = server
 		self.mode_stack = 0
 		self.topic = ''
 		self.limit = 30
@@ -28,6 +29,10 @@ class IRCChannel:
 		"""Removes a user from a channel. If the client isn't in the channel, it is ignored."""
 		if client in self.members:
 			del self.members[client]
+			
+		# if it was the last channel, remove it
+		if (len(self.members) < 1) and (self.name in self.server.channels):
+			del self.server.channels[self.name]
 
 	def has_mode(self, flag):
 		"""Convenience method to check if the channel has a given mode flag enabled."""
