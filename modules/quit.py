@@ -12,6 +12,7 @@ def handle_event(srv, source, params):
 	The QUIT will be announced to all channels the user is in, and if the user
 	is registered, it will be unregistered from the server.
 	Closing of the actual socket occurs last (after the client is unregistered).
+	A quite event triggers an unregistration.
 	"""
 	msg = source.nick if (len(params) < 1) else params[0]
 

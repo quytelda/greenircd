@@ -17,9 +17,15 @@ def config(srv, path, init = True):
 			if init:
 				srv.name = section.replace('server:', '')
 			
-			# get port
-			if ('port' in parser.options(section)) and init:
-				srv.port = int(parser.get(section, 'port'))
+			# get port listening configuration
+			if ('ports-client' in parser.options(section)) and init:
+				port_list = parser.get(section, 'ports-client')
+				ports = [int(p) for p in port_list.replace(' ', '').split(',')]
+				if len(ports) > 0: srv.ports_client = ports
+			if ('ports-client-ssl' in parser.options(section)) and init:
+				port_list = parser.get(section, 'ports-client-ssl')
+				ports = [int(p) for p in port_list.replace(' ', '').split(',')]
+				if len(ports) > 0: srv.ports_client_ssl = ports
 				
 			# get info
 			if 'info' in parser.options(section):

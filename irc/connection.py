@@ -14,6 +14,9 @@ class IRCConnection:
 	
 	def handle_data(self, data):
 		"""Passes the server the data from the connection.  In the future, this message should ensure that this is (a) allowed, and (b) valid."""
+		# if data has been received, the connection is indeed alive
+		self.ctcn.alive = True
+
 		self.server.handle_message(self, data)
 		
 	# TODO implement cloaking

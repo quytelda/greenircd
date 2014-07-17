@@ -136,10 +136,8 @@ def user_mode(srv, source, user, params):
 		# operator modes can't be added with the MODE command
 		if (not flag in symbols.user_modes): continue
 		
-		# modes above XXX can't be added unless you already have greater privileges.
-		if (symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag]):
-			source.ctcn.message("481 %s :You don't have the correct priveleges to use this mode." % source.nick)
-			continue
+		# certain user modes are restricted
+		if restricted(source, flag): continue
 		
 		# apply the mask to the channel mode
 		user.mode_stack |= symbols.user_modes[flag]
@@ -160,3 +158,17 @@ def user_mode(srv, source, user, params):
 	
 	# send the mode change message
 	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())
+	
+def restricted(user, flag):
+	"""Checks to see if manipulation of a mode is restricted for a given user.  If so, it sends an RPL_NOPRIVELEGES numeric and returns true; otherwise, it returns false."""
+	# users must use SSL to set +z
+	# users must have a vhost
+	# reserved for use by services
+	if ((flag == 'z') and not user.ctcn.ssl) or \
+		((flag == 't') and (user.vhost == None)) or \
+		((symbols.user_modes[flag] >= symbols.user_modes['o']) and (user.mode_stack < symbols.user_modes[flag])) or \
+		((flag == 'S') or (flag == 'r')):
+		user.ctcn.message("481 %s :You don't have the correct priveleges to use this mode." % user.nick)
+		return True
+	
+	return False

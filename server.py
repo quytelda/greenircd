@@ -5,7 +5,7 @@
 
 import sys
 
-from twisted.internet import reactor, endpoints
+from twisted.internet import ssl, reactor, endpoints
 
 from irc.connection import IRCConnection
 from irc.client import IRCClient
@@ -24,10 +24,12 @@ class Server:
 	# server globals
 	name = None # server name (doesn't need to match hostname)
 	version = 'GreenIRCDv0.1u' # version string
-	port = 6667 # port to list on
+	ports_client = [6667] # ports to list on (clients)
+	ports_client_ssl = [6668] # port to listen on with SSL (clients)
 	info = version
 	admin_email = None
 	config = None
+	bans = []
 	
 	clients = {} # list of clients by nick
 	servers = {} # list of servers by name
@@ -47,8 +49,17 @@ class Server:
 
 	def start(self):
 		"""Attempts to start the server and listen for connections."""		
-		self.endpoint = endpoints.TCP4ServerEndpoint(reactor, self.port)
-		self.endpoint.listen(connection.ConnectionFactory(self))
+		for port in self.ports_client:
+			reactor.listenTCP(port, connection.ConnectionFactory(self))
+			print "* Listening on", port
+		
+		# listen for SSL connections on the given ports
+		context = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
+		for port in self.ports_client_ssl:
+			reactor.listenSSL(port, connection.ConnectionFactory(self, ssl = True), context)
+			print "* Listening on", port, "(SSL)"
+		
+		# run the reactor (start accepting connections)
 		reactor.run()
 		
 	def register_hooks(self):
@@ -97,7 +108,11 @@ class Server:
 		modules.version.handle_event(self, client, [])
 
 		# set welcome modes
-		modules.mode.handle_event(self, client, [client.nick, '+' + self.connect_modes])
+		mode_string = '+' + self.connect_modes
+		if client.ctcn.ssl: mode_string += 'z'
+		print client.ctcn.ssl
+		modules.mode.handle_event(self, client, [client.nick, mode_string])
+			
 
 		# autojoin channels in the autojoin list
 		if len(self.autojoin) > 0:

@@ -58,29 +58,41 @@ status_modes = {
 }
 
 # lvhopsmntikrRcaqOALQbSeIKVfMCuzNTGjZ
+# ntslmPZOvhoaq
 chan_modes = {
 	'n' : 2**0,
 	't' : 2**1,
-	'l' : 2**2,
-	'm' : 2**3,
-	'P' : 2**4,
-	'O' : 2**5,
-	's' : 2**6,
-	'o' : 0,
+	's' : 2**2,
+	'l' : 2**3,
+	'm' : 2**4,
+	'P' : 2**5,
+	'Z' : 2**6,
+	'O' : 2**7,
+	'A' : 2**8,
+
+	# status modes
 	'v' : 0,
 	'h' : 0,
+	'o' : 0,
 	'a' : 0,
 	'q' : 0
 }
 
 user_modes = {
+	# "freely settable" modes
 	'i' : 2**0, # invisible
 	'x' : 2**1, # cloaked host
 	'w' : 2**2, # receives Wallops
-	't' : 2**3, # using vhost
 	'p' : 2**4, # hides channels
 	's' : 2**5, # receives server notices
+	
+	# restricted modes
 	'z' : 2**6, # using SSL
+	't' : 2**7, # using vhost
+	'r' : 2**8, # registered
+	'S' : 2**9,  # network service
+	
+	# operator modes
 	'o' : 2**10, # local operator
 	'O' : 2**11, # global operator
 	'q' : 2**12, # protected

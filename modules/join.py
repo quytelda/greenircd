@@ -52,10 +52,20 @@ def handle_event(srv, source, params):
 	if channel.has_mode('l') and (len(channel.members) >= channel.limit):
 		source.ctcn.numeric(symbols.ERR_CHANNELISFULL, source.nick, "%s :Channel is full" % target)
 		return
-	
+
+	# if the channel is oper only (+Z), only ssl clients can join
+	if channel.has_mode('Z') and not source.has_mode('z'):
+		source.ctcn.numeric(symbols.ERR_NOPRIVILEGES, source.nick, ":You must be connected with SSL.")
+		return
+
 	# if the channel is oper only (+O), only server operators can join
 	if channel.has_mode('O') and (source.mode_stack < symbols.user_modes['o']):
 		source.ctcn.numeric(symbols.ERR_NOPRIVILEGES, source.nick, ":Only server operators can join.")
+		return
+		
+	# if the channel is oper only (+A), only server admins can join
+	if channel.has_mode('A') and (source.mode_stack < symbols.user_modes['a']):
+		source.ctcn.numeric(symbols.ERR_NOPRIVILEGES, source.nick, ":Only server administrators can join.")
 		return
 
 	# join the user

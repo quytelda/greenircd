@@ -9,16 +9,23 @@
 
 import socket
 
-from twisted.internet import protocol
+from twisted.internet import protocol, task
 from twisted.protocols.basic import LineReceiver
 
 import irc.connection
 
+import modules.quit
+
 class Connection(LineReceiver):
-	def __init__(self, server):
+	def __init__(self, server, ssl = False):
 		self.host = {'ip' : None, 'hostname' : None}
+		self.ssl = ssl
 		self.server = server
 		self.container = irc.connection.IRCConnection(server, self)
+		self.alive = True
+		
+		live = task.LoopingCall(self.check_alive)
+		live.start(20)
 
 	# this hook is called when a peer has initiated a connection
 	# first we need to resolve the connection details
@@ -42,6 +49,18 @@ class Connection(LineReceiver):
 		# then we must send our requests directly to the server, and hope for approval
 		self.container.handle_data(data)
 		
+	def check_alive(self):
+		# check if the last ping was reciprocated
+		if not self.alive:
+			modules.quit.handle_event(self.server, self.container, ['Ping Timeout'])
+			return
+
+		# ping the client
+		if isinstance(self.container, irc.client.IRCClient):
+			self.transport.write("PING :%s\r\n" % self.server.name)
+		
+		self.alive = False
+		
 	def message(self, msg, prefix = None):
 		self.transport.write(":%s %s\r\n" % (prefix if (prefix != None) else self.server.name, msg))
 		
@@ -53,8 +72,9 @@ class Connection(LineReceiver):
 
 class ConnectionFactory(protocol.Factory):
 	
-	def __init__(self, server):
+	def __init__(self, server, ssl = False):
 		self.server = server
+		self.ssl = ssl
 
 	def buildProtocol(self, addr):
-		return Connection(self.server)
+		return Connection(self.server, self.ssl)
