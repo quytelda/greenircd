@@ -3,12 +3,34 @@
 #
 # Copyright (C) 2014 Quytelda Gaiwin
 
-import server
-import config
+import os, sys
 
-def main(path):
+import server, config
+
+def main(argv):
+	fork = True
+	path = 'greenircd.conf'
+	
+	print "Args:", argv
+	if '-f' in argv: fork = False
+	
+
 	srv = server.Server('green.tamalin.org')
 	config.config(srv, path)
-	srv.start()
+	
+	if not fork:
+		srv.start()
+	else:
+		# fork the daemon into the background and exit
+		try:
+			print "* Forking daemon to background."
+			pid = os.fork()
+		except OSError:
+			print "* Failed start background process!"
 
-main('greenircd.conf')
+		if (pid == 0):
+			# ungroup the daemon process from the process group
+			os.setsid()
+			srv.start()
+
+main(sys.argv)

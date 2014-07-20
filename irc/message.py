@@ -2,10 +2,10 @@ class IRCMessage:
 	def __init__(self, raw_msg = None):
 		# parse raw_msg, if provided
 		if raw_msg == None: return
-		
+
 		# first, split the command into its space-separated components
 		components = raw_msg.split(' ')
-		
+
 		ptr = 0
 		# first, determine the source of the message
 		if(components[ptr].startswith(':')): # there is a prefix
@@ -26,5 +26,6 @@ class IRCMessage:
 				self.params.append(components[i])
 			else: # trailing arguments
 				self.params.append((' '.join(components[i:]))[1:])
+				break
 				
 		print "Params:", self.params

@@ -26,6 +26,14 @@ def config(srv, path, init = True):
 				port_list = parser.get(section, 'ports-client-ssl')
 				ports = [int(p) for p in port_list.replace(' ', '').split(',')]
 				if len(ports) > 0: srv.ports_client_ssl = ports
+			if ('ports-server' in parser.options(section)) and init:
+				port_list = parser.get(section, 'ports-server')
+				ports = [int(p) for p in port_list.replace(' ', '').split(',')]
+				if len(ports) > 0: srv.ports_server = ports
+			if ('ports-server-ssl' in parser.options(section)) and init:
+				port_list = parser.get(section, 'ports-server-ssl')
+				ports = [int(p) for p in port_list.replace(' ', '').split(',')]
+				if len(ports) > 0: srv.ports_server_ssl = ports
 				
 			# get info
 			if 'info' in parser.options(section):
@@ -57,3 +65,15 @@ def config(srv, path, init = True):
 				oper['flags'] = 'o'
 				
 			srv.opers.append(oper)
+		
+		if section.startswith('link:'):
+			link = {}
+			name = section.replace('link:', '')
+			
+			# get auth
+			link['lauth'] = parser.get(section, 'local-auth')
+			link['rauth'] = parser.get(section, 'remote-auth')
+			link['host'] = parser.get(section, 'host')
+				
+			srv.links[name] = link
+			print "!!!srv.links:", srv.links

@@ -4,6 +4,7 @@
 import irc.client
 
 __command__ = 'QUIT'
+preregister = True
 
 # QUIT (:<reason>)
 def handle_event(srv, source, params):
@@ -14,7 +15,7 @@ def handle_event(srv, source, params):
 	Closing of the actual socket occurs last (after the client is unregistered).
 	A quite event triggers an unregistration.
 	"""
-	msg = source.nick if (len(params) < 1) else params[0]
+	msg = params[0] if len(params)> 0 else (source.nick if hasattr(source, 'nick') else '')
 
 	# announce the quit event
 	# TODO make this in-channel

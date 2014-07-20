@@ -30,7 +30,11 @@ class Connection(LineReceiver):
 	# this hook is called when a peer has initiated a connection
 	# first we need to resolve the connection details
 	def connectionMade(self):
-		print '* connection established'
+		"""
+		This hooks is triggered when a peer has initiated a connection to the server.
+		Here the connection details (peer IP and hostname) are resolved.
+		"""
+		print '* connection established on port %s (%s)' % (self.transport.getHost().port, self.container.host(False))
 		
 		# determine the peer's address and hostname
 		self.message('NOTICE AUTH :*** Connection established; finding your hostname...')
@@ -42,29 +46,43 @@ class Connection(LineReceiver):
 			self.message('NOTICE AUTH :*** Unable to resolve host; using peer IP.')
 
 	def connectionLost(self, reason):
-		print "* connection lost"
+		print "* connection lost (%s)" % self.host
 		
 	def lineReceived(self, data):
-		# if we are unregistered (we don't have a client or server container)
-		# then we must send our requests directly to the server, and hope for approval
+		"""
+		Receives lines of data (separated by CR-LF) from the client, and passes them to the central server for processing
+		via the connection's container object (which is or needs to be registered with the server).
+		"""
 		self.container.handle_data(data)
 		
 	def check_alive(self):
-		# check if the last ping was reciprocated
+		"""
+		This method, called at regular intervals, checks to see if the client has sent any data (probably a PONG message)
+		since the last PING message from the server.If not, the connection is considered dead and is terminated;
+		otherwise, another PING message is sent.
+		"""
+		# if the last ping wasn't reciprocated, kill the connection
+		# (generate a QUIT event with the appropriate reason)
 		if not self.alive:
 			modules.quit.handle_event(self.server, self.container, ['Ping Timeout'])
 			return
 
-		# ping the client
+		# ping the client anew
+		# for some reason, the PING message should *not* be prefixed
 		if isinstance(self.container, irc.client.IRCClient):
 			self.transport.write("PING :%s\r\n" % self.server.name)
 
 		self.alive = False
 
 	def message(self, msg, prefix = None):
+		"""Sends a message to the client socket, appropriately prefixed and padded with the requisite CR-LF delimiter."""
 		self.transport.write(":%s %s\r\n" % (prefix if (prefix != None) else self.server.name, msg))
 		
 	def numeric(self, numeric, nick, msg, prefix = None):
+		"""
+		Sends a properly formatted numeric message to the client.
+		The message receives the proper prefix and CR-LF via connection.message().
+		"""
 		if nick != None:
 			self.message("%03d %s %s" % (numeric, nick, msg), prefix)
 		else:
