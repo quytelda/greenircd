@@ -26,15 +26,22 @@ preregister = True
 
 # NICK <nickname> [<hopcount>]
 def handle_event(srv, source, params):
+	if source in srv.servers.values(): server_nick(srv, source, params)
+	else: client_nick(srv, source, params)
+
+
+def client_nick(srv, source, params):
 	if len(params) < 1:
-		source.ctcn.numeric(symbols.ERR_NEEDMOREPARAMS, source.nick if hasattr(source, 'nick') else None, "NICK : NICK requires at least 1 parameter.")
+		source.ctcn.numeric(symbols.ERR_NEEDMOREPARAMS, source.nick if hasattr(source, 'nick') else None,
+			"NICK : NICK requires at least 1 parameter.")
 		return
 
 	target = params[0]
 
 	# can't use nicks already in use
 	if target in srv.clients:
-		source.ctcn.numeric(symbols.ERR_NICKNAMEINUSE, source.nick if hasattr(source, 'nick') else None, "%s :Nick name already in use." % target)
+		source.ctcn.numeric(symbols.ERR_NICKNAMEINUSE, source.nick if hasattr(source, 'nick') else None,
+			"%s :Nick name already in use." % target)
 		return
 	
 	old_nick = source.nick if hasattr(source, 'nick') else None
@@ -50,3 +57,6 @@ def handle_event(srv, source, params):
 	# TODO: make this in-channel only
 	if isinstance(source, irc.client.IRCClient):
 		srv.announce_common(source, "NICK %s" % target, old_nick)
+		
+def server_nick(srv, source, params):
+	pass

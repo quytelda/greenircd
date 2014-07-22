@@ -19,12 +19,12 @@
 # along with GreenIRCd.  If not, see <http://www.gnu.org/licenses/>.
 
 import symbols
-
-# 
-# IRCChannel
-# This class represents an IRC channel
-#			
+		
 class IRCChannel:
+"""
+IRCChannel represents an IRC channel (by its collection of users and properties) on the network.
+"""
+
 	def __init__(self, name, server):
 		self.name = name
 		self.server = server
@@ -32,16 +32,25 @@ class IRCChannel:
 		self.topic = ''
 		self.limit = 30
 		self.members = {}
+		self.bans = []
+
 	
 	def join(self, client):
-		"""Adds a client as a member in the channel.  If they are the first, they get ops (+qo)."""
+		"""
+		Adds a client as a member in the channel.  If they are the first, they get ops (+qo).
+		This method does /not/ generate or represent JOIN event (a JOIN event will likely invoke this if succesful)
+		"""
 		# the first user gets the highest mode available (+q, owner)
 		# we will apply +qo to the user automatically, since many clients put more emphasis on operators
 		status = (symbols.CHOWNER | symbols.CHOPER) if (len(self.members) == 0) else 1
 		self.members[client] = status
-	
+
+
 	def part(self, client):
-		"""Removes a user from a channel. If the client isn't in the channel, it is ignored."""
+		"""
+		Removes a user from a channel. If the client isn't in the channel, it is ignored.
+		This method does /not/ represent a PART event.
+		"""
 		if client in self.members:
 			del self.members[client]
 			
@@ -49,9 +58,11 @@ class IRCChannel:
 		if (len(self.members) < 1) and (self.name in self.server.channels):
 			del self.server.channels[self.name]
 
+
 	def has_mode(self, flag):
 		"""Convenience method to check if the channel has a given mode flag enabled."""
 		return (self.mode_stack & symbols.chan_modes[flag]) > 0
+
 
 	def prefix(self, user):
 		"""Returns the prefix of the user as it would appear in the names list; supports multi-prefix."""
@@ -62,6 +73,7 @@ class IRCChannel:
 				
 		return prefix
 
+
 	def names(self):
 		"""Returns a nicely formatted string for NAMES, with prefixes"""
 		nam_list = ''
@@ -70,3 +82,9 @@ class IRCChannel:
 			nam_list = nam_list + ' ' + symbols.status_modes[status]['prefix'] + member.nick
 			
 		return nam_list.strip()
+		
+	def is_banned(self, user):
+		"""Checks if a user is banned from this channel."""
+		#TODO implement wildcards
+		
+		return user.hostmask() in self.bans

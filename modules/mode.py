@@ -40,6 +40,8 @@ def handle_event(srv, source, params):
 	else: # the target doesn't exists
 		source.ctcn.numeric(symbols.ERR_NOSUCHNICK, source.nick, "%s :No such nick or channel." % target)
 
+
+
 def channel_mode(srv, source, channel, params):
 	# if only a target is provided,
 	# the command is treated as a query
@@ -86,9 +88,12 @@ def channel_mode(srv, source, channel, params):
 		# </END STATUS MODES>
 		
 		# handle the modes that take parameters
+		# TODO value checking
 		if (flag == 'l') and (len(params) > 1): # Channel limit flag, takes one integer parameter
 			channel.limit = int(params[1])
 			del params[1]
+		elif (flag == 'b') and (len(params) > 1): # Channel ban flag, takes one string parameter
+			channel.bans.append(params[1])
 		
 		# add the mask to the channel mode
 		channel.mode_stack |= mask
@@ -123,6 +128,8 @@ def channel_mode(srv, source, channel, params):
 	# if any modes were actually changed, we announce it to the channel
 	if len(net_mode) > 0:
 		srv.announce_channel(channel, 'MODE %s %s' % (channel.name, net_mode), source.hostmask())
+
+
 
 def user_mode(srv, source, user, params):
 	# if only a target is provided,
@@ -173,7 +180,9 @@ def user_mode(srv, source, user, params):
 	
 	# send the mode change message
 	source.ctcn.message('MODE %s :%s' % (user.nick, net_mode), source.hostmask())
-	
+
+
+
 def restricted(user, flag):
 	"""Checks to see if manipulation of a mode is restricted for a given user.  If so, it sends an RPL_NOPRIVELEGES numeric and returns true; otherwise, it returns false."""
 	# users must use SSL to set +z

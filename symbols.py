@@ -87,13 +87,14 @@ chan_modes = {
 	'A' : 2**8, # administrators only
 
 	# channel status modes
-	# since these modes affect the status of individual users in the channel
-	# they have a mask of zero, since it isn't a toggleable setting
+	# since these modes affect the status of individual (or groups of) users in the channel
+	# they have a mask of zero, since it isn't a "toggled setting"
 	'v' : 0, # voiced 
 	'h' : 0, # half operator
 	'o' : 0, # operators
 	'a' : 0, # administrator
-	'q' : 0  # owner
+	'q' : 0, # owner
+	'b' : 0  # banned
 }
 
 # user mode symbols and masks
