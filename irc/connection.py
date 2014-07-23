@@ -32,7 +32,8 @@ class IRCConnection:
 		# if data has been received, the connection is indeed alive
 		# mark it alive, and reset the timer
 		self.ctcn.alive = True
-		self.ctcn.alive_timer.reset()
+		#self.ctcn.alive_timer.reset()
+		print "!!!Data received (%s), client is alive (%s)" % (data, self.nick if hasattr(self, 'nick') else str(self))
 
 		self.server.handle_message(self, data)
 		

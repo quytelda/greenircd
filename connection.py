@@ -10,7 +10,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-# WeeChat is distributed in the hope that it will be useful,
+# GreenIRCd is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -58,6 +58,7 @@ class Connection(LineReceiver):
 		print '* connection established on port %s (%s)' % (self.transport.getHost().port, self.container.host(False))
 
 	def connectionLost(self, reason):
+		self.alive_timer.stop()
 		print "* connection lost (%s)" % self.container.host(False)
 
 		
@@ -78,14 +79,18 @@ class Connection(LineReceiver):
 		# if the last ping wasn't reciprocated, kill the connection
 		# (generate a QUIT event with the appropriate reason)
 		if not self.alive:
+			print "!!!Client pinged out (%s)" % self.container.nick if hasattr(self.container, 'nick') else str(self)
 			modules.quit.handle_event(self.server, self.container, ['Ping Timeout'])
 			return
+
+		print "!!!client still alive (%s)" % self.container.nick if hasattr(self.container, 'nick') else str(self)
 
 		# ping the client anew
 		# for some reason, the PING message should *not* be prefixed
 		if isinstance(self.container, irc.client.IRCClient):
 			self.alive = False
 			self.transport.write("PING :%s\r\n" % self.server.name)
+			print "!!!ping sent (%s)" % self.container.nick if hasattr(self.container, 'nick') else str(self)
 
 
 	def message(self, msg, prefix = None):

@@ -32,12 +32,13 @@ def handle_event(srv, source, params):
 	Closing of the actual socket occurs last (after the client is unregistered).
 	A quite event triggers an unregistration.
 	"""
+	print "* QUIT received from (%s)" % source.nick
 	msg = params[0] if len(params)> 0 else (source.nick if hasattr(source, 'nick') else '')
 
 	# announce the quit event
 	# TODO make this in-channel
 	if source in srv.clients.values():
-		srv.announce("QUIT :%s" % msg, source.hostmask())
+		srv.announce_common(source, "QUIT :%s" % msg, source.hostmask())
 
 	# remove the user from all channels
 	for channel in srv.channels.values():
@@ -49,3 +50,4 @@ def handle_event(srv, source, params):
 
 	# close the connection
 	source.terminate()
+	print "* QUIT executed"

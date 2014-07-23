@@ -21,8 +21,6 @@
 
 import symbols
 
-import modules.mode
-
 __command__ = 'CHGHOST'
 
 # Syntax: CHGHOST <nick> <new host>
@@ -48,6 +46,7 @@ def handle_event(srv, source, params):
 
 	# set the vhost and add the +t flag
 	user.vhost = new_host
-	modules.mode.handle_event(srv, source, [source.nick, '+t'])
+	user.mode_stack |= symbols.user_modes['t']
+	source.ctcn.message("MODE %s :+t" % user.nick, source.hostmask())
 	
 	source.ctcn.message("NOTICE %s :Changed vhost to %s." % (source.nick, new_host))
