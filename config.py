@@ -92,4 +92,3 @@ def config(srv, path, init = True):
 			link['host'] = parser.get(section, 'host')
 				
 			srv.links[name] = link
-			print "!!!srv.links:", srv.links

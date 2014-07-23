@@ -41,8 +41,8 @@ def main(argv):
 	else:
 		# fork the daemon into the background and exit
 		try:
-			print "* Forking daemon to background."
 			pid = os.fork()
+			print "* Forked daemon to background."
 		except OSError:
 			print "* Failed start background process!"
 

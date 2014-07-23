@@ -19,12 +19,10 @@
 # along with GreenIRCd.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-
 from twisted.internet import protocol, task
 from twisted.protocols.basic import LineReceiver
 
 import irc.connection
-
 import modules.quit
 
 class Connection(LineReceiver):
@@ -47,8 +45,7 @@ class Connection(LineReceiver):
 		This hooks is triggered when a peer has initiated a connection to the server.
 		Here the connection details (peer IP and hostname) are resolved.
 		"""
-		print '* connection established on port %s (%s)' % (self.transport.getHost().port, self.container.host(False))
-		
+
 		# determine the peer's address and hostname
 		self.message('NOTICE AUTH :*** Connection established; finding your hostname...')
 		self.host['ip'] = self.transport.getPeer().host
@@ -57,10 +54,11 @@ class Connection(LineReceiver):
 			self.message('NOTICE AUTH :*** Found your hostname (%s).' % self.host['hostname'])
 		except socket.herror:
 			self.message('NOTICE AUTH :*** Unable to resolve host; using peer IP.')
-
+		
+		print '* connection established on port %s (%s)' % (self.transport.getHost().port, self.container.host(False))
 
 	def connectionLost(self, reason):
-		print "* connection lost (%s)" % self.host
+		print "* connection lost (%s)" % self.container.host(False)
 
 		
 	def lineReceived(self, data):

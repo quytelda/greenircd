@@ -59,6 +59,7 @@ class Server:
 	operjoin = '#opers' # channel(s) to autojoin on oper
 	info = version
 	config = None
+	connect_modes = 'ix' # modes to assign upon registration
 	
 	# administrative information fields
 	admin_lines = []
@@ -69,12 +70,13 @@ class Server:
 	servers = {} # list of servers by name
 	channels = {} # list of channels by name (including prefixes)
 	
-	connect_modes = 'ix' # modes to assign upon registration
+
 	
 	# we need a name to initialize the server
 	def __init__(self, name):
 		self.name = name
 		self.register_hooks()
+
 
 	def start(self):
 		"""Attempts to start the server and listen for connections on whatever ports are designated."""	
@@ -91,6 +93,7 @@ class Server:
 		
 		# run the reactor (start accepting connections)
 		reactor.run()
+
 		
 	def register_hooks(self):
 		"""Finds and registers all command hooks from the correct package."""
@@ -108,6 +111,7 @@ class Server:
 
 			self.hooks[mod.__command__] = mod.handle_event
 
+
 	def register_client(self, client, welcome = True):
 		"""
 		When a client connects to the IRC network, it must be registered with the server to send and receive messages on the network.
@@ -121,6 +125,7 @@ class Server:
 			self.welcome_client(client)
 			sendsno.handle_event(self, None, ['s', "Notice: New client has registered on this server (%s)." % client.hostmask()])
 
+
 	def unregister_client(self, client):
 		"""Attempts to reverse the effects of registering a client with the server."""
 		if not isinstance(client, IRCClient) or (client.nick == None) or (not client.nick in self.clients):
@@ -128,6 +133,7 @@ class Server:
 
 		del self.clients[client.nick]
 		print "* Client (%s) unregistered" % client.hostmask()
+
 
 	def update_client(self, client, old_nick):
 		if not isinstance(client, IRCClient) or (client.nick == None):
@@ -138,7 +144,12 @@ class Server:
 
 		self.register_client(client, welcome = (old_nick == None))
 
+
 	def welcome_client(self, client):
+		"""
+		Fired when a client becomes registered on the server.
+		Sends the welcome confirmation message, and applies the welcome stuff.
+		"""
 		# send the welcome information
 		client.ctcn.numeric(symbols.RPL_WELCOME, client.nick, "Welcome to %s, %s!" % (self.name, client.nick))
 		modules.version.handle_event(self, client, [])
@@ -146,19 +157,20 @@ class Server:
 		# set welcome modes
 		mode_string = '+' + self.connect_modes
 		if client.ctcn.ssl: mode_string += 'z'
-		print client.ctcn.ssl
 		modules.mode.handle_event(self, client, [client.nick, mode_string])
-
 
 		# autojoin channels in the autojoin list
 		if len(self.autojoin) > 0:
 			modules.join.handle_event(self, client, [self.autojoin])
+
 			
 	def register_server(self, server):
 		self.servers[server.name]
 
+
 	def unregister_server(self, server):
 		del self.servers[server.name]
+
 
 	def announce(self, msg, prefix, exclude = None):
 		"""Sends a message to every client registered with the server"""
@@ -166,17 +178,20 @@ class Server:
 			if client == exclude: continue
 			client.ctcn.message(msg, prefix)
 
+
 	def announce_channel(self, channel, msg, prefix, exclude = None):
 		"""Sends a message to every client in the channel"""
 		for client in channel.members:
 			if client == exclude: continue
 			client.ctcn.message(msg, prefix)
 
+
 	def announce_common(self, client, msg, prefix, exclude = None):
 		"""Sends a message to all clients in a common channel with the given client."""
 		for channel in self.channels.values():
 			if client in channel.members:
 				self.announce_channel(channel, msg, prefix, exclude)
+
 
 	# TODO command vs numeric vs garbage
 	def handle_message(self, source, data):
@@ -186,6 +201,7 @@ class Server:
 		# attempt to parse the message
 		msg = IRCMessage(message)
 		self.do_command(source, msg)
+
 
 	def do_command(self, source, msg):
 		"""Attempts to execute a command with the corresponding command handle (loaded as a module with a handle_event method)."""

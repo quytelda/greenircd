@@ -60,4 +60,3 @@ def handle_event(srv, source, params):
 	server = irc.server.IRCServer(source.ctcn, servername, hops, info)
 	srv.servers[servername] = server
 	source.ctcn.message("SERVER %s 0 :%s" % (srv.name, srv.info))
-	print "!!!srv.servers", srv.servers

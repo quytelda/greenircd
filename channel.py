@@ -21,9 +21,9 @@
 import symbols
 		
 class IRCChannel:
-"""
-IRCChannel represents an IRC channel (by its collection of users and properties) on the network.
-"""
+	"""
+	IRCChannel represents an IRC channel (by its collection of users and properties) on the network.
+	"""
 
 	def __init__(self, name, server):
 		self.name = name
@@ -34,7 +34,7 @@ IRCChannel represents an IRC channel (by its collection of users and properties)
 		self.members = {}
 		self.bans = []
 
-	
+
 	def join(self, client):
 		"""
 		Adds a client as a member in the channel.  If they are the first, they get ops (+qo).
@@ -82,7 +82,8 @@ IRCChannel represents an IRC channel (by its collection of users and properties)
 			nam_list = nam_list + ' ' + symbols.status_modes[status]['prefix'] + member.nick
 			
 		return nam_list.strip()
-		
+
+
 	def is_banned(self, user):
 		"""Checks if a user is banned from this channel."""
 		#TODO implement wildcards

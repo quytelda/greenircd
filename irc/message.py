@@ -28,12 +28,10 @@ class IRCMessage:
 		# first, determine the source of the message
 		if(components[ptr].startswith(':')): # there is a prefix
 			self.source = components[ptr][1:]
-			print "Source:", self.source
 			ptr = ptr + 1
 		
 		# then, parse the command
 		self.command = components[ptr]
-		print "Command:", self.command
 		ptr = ptr + 1
 		
 		# next, parse the arguments
@@ -45,5 +43,3 @@ class IRCMessage:
 			else: # trailing arguments
 				self.params.append((' '.join(components[i:]))[1:])
 				break
-				
-		print "Params:", self.params
