@@ -29,17 +29,19 @@ import modules.quit
 
 class Connection(LineReceiver):
 	def __init__(self, server, ssl = False):
+		
+		# set connection properties
 		self.host = {'ip' : None, 'hostname' : None}
 		self.ssl = ssl
 		self.server = server
 		self.container = irc.connection.IRCConnection(server, self)
 		self.alive = True
 
+		# start the livelihood check loop
 		self.alive_timer = task.LoopingCall(self.check_alive)
 		self.alive_timer.start(30)
 
-	# this hook is called when a peer has initiated a connection
-	# first we need to resolve the connection details
+
 	def connectionMade(self):
 		"""
 		This hooks is triggered when a peer has initiated a connection to the server.
@@ -56,8 +58,10 @@ class Connection(LineReceiver):
 		except socket.herror:
 			self.message('NOTICE AUTH :*** Unable to resolve host; using peer IP.')
 
+
 	def connectionLost(self, reason):
 		print "* connection lost (%s)" % self.host
+
 		
 	def lineReceived(self, data):
 		"""
@@ -65,6 +69,7 @@ class Connection(LineReceiver):
 		via the connection's container object (which is or needs to be registered with the server).
 		"""
 		self.container.handle_data(data)
+
 		
 	def check_alive(self):
 		"""
@@ -81,13 +86,14 @@ class Connection(LineReceiver):
 		# ping the client anew
 		# for some reason, the PING message should *not* be prefixed
 		if isinstance(self.container, irc.client.IRCClient):
+			self.alive = False
 			self.transport.write("PING :%s\r\n" % self.server.name)
 
-		self.alive = False
 
 	def message(self, msg, prefix = None):
 		"""Sends a message to the client socket, appropriately prefixed and padded with the requisite CR-LF delimiter."""
 		self.transport.write(":%s %s\r\n" % (prefix if (prefix != None) else self.server.name, msg))
+
 		
 	def numeric(self, numeric, nick, msg, prefix = None):
 		"""
@@ -99,11 +105,14 @@ class Connection(LineReceiver):
 		else:
 			self.message("%03d %s" % (numeric, msg), prefix)
 
+
+
 class ConnectionFactory(protocol.Factory):
 	
 	def __init__(self, server, ssl = False):
 		self.server = server
 		self.ssl = ssl
+
 
 	def buildProtocol(self, addr):
 		return Connection(self.server, self.ssl)
