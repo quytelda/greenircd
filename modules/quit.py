@@ -10,7 +10,7 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-# WeeChat is distributed in the hope that it will be useful,
+# GreenIRCd is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -32,11 +32,9 @@ def handle_event(srv, source, params):
 	Closing of the actual socket occurs last (after the client is unregistered).
 	A quite event triggers an unregistration.
 	"""
-	print "* QUIT received from (%s)" % source.nick
 	msg = params[0] if len(params)> 0 else (source.nick if hasattr(source, 'nick') else '')
 
 	# announce the quit event
-	# TODO make this in-channel
 	if source in srv.clients.values():
 		srv.announce_common(source, "QUIT :%s" % msg, source.hostmask())
 
@@ -50,4 +48,3 @@ def handle_event(srv, source, params):
 
 	# close the connection
 	source.terminate()
-	print "* QUIT executed"
