@@ -1,3 +1,23 @@
+GreenIRCD is a simple IRC daemon written in Python. GreenIRCD aims to be simple and easy to configure and use.
+
+Features:
+
+    Extended channel status modes (+qaohv)
+    Hostname cloaking
+    vHosts
+    SSL encrypted connections
+    Configurable Opers/Admins
+    Pluggable modules
+    UTF-8 Support
+
+Planned Features (on the agenda):
+
+    Server Linking (GreenIRCd)
+    Connection Throttling
+    Linked or Integrated Services
+    (Extended) Server and Channel Bans
+
+
 Supports the following commands:
 JOIN, PART, QUIT, NICK, USER, LIST, WHO, WHOIS, MODE, PRIVMSG, NOTICE, NAMES, TOPIC, KICK, KILL, OPER, WALLOPS
 
