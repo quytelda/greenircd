@@ -38,7 +38,7 @@ Channel Modes: OPahmlonqstv
 	v		gives voice (+)
 * takes a parameter
 
-User Modes: aqowxi
+User Modes: aqowxit
 	MODE	MEANING
 	a		administrator
 	q		protected
@@ -46,3 +46,4 @@ User Modes: aqowxi
 	w		receives wallops
 	x		cloaked host
 	i		invisible		
+	t		using vhost (server-only)
