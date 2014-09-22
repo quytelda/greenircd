@@ -20,7 +20,7 @@
 
 import symbols
 
-__command__ = "KICK"
+__command__ = "CAP"
 
 def handle_event(srv, source, params):
 	if len(params) < 1:
