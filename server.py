@@ -51,7 +51,7 @@ class Server:
 	ports_server = [] # ports to list on (servers)
 	ports_server_ssl = [] # port to listen on with SSL (servers)
 	hooks = {}	# list of command hooks by command
-	
+
 	opers = [] # list of oper entries
 	links = {} # list of link entries
 	bans = [] # list of banned hosts
@@ -60,18 +60,18 @@ class Server:
 	info = version
 	config = None
 	connect_modes = 'ix' # modes to assign upon registration
-	
+
 	# administrative information fields
 	admin_lines = []
 	admin_email = None
-	
+
 	# network structures
 	clients = {} # list of clients by nick
 	servers = {} # list of servers by name
 	channels = {} # list of channels by name (including prefixes)
-	
 
-	
+
+
 	# we need a name to initialize the server
 	def __init__(self, name):
 		self.name = name
@@ -79,22 +79,25 @@ class Server:
 
 
 	def start(self):
-		"""Attempts to start the server and listen for connections on whatever ports are designated."""	
-		# listen for TCP connections on the given ports	
+		"""Attempts to start the server and listen for connections on whatever ports are designated."""
+		# listen for TCP connections on the given ports
 		for port in self.ports_client + self.ports_server:
 			reactor.listenTCP(port, connection.ConnectionFactory(self))
 			print "* Listening on", port
-		
+
 		# listen for SSL connections on the given ports
-		context = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
-		for port in self.ports_client_ssl + self.ports_server_ssl:
-			reactor.listenSSL(port, connection.ConnectionFactory(self, ssl = True), context)
-			print "* Listening on", port, "(SSL)"
-		
+		try:
+			context = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
+			for port in self.ports_client_ssl + self.ports_server_ssl:
+				reactor.listenSSL(port, connection.ConnectionFactory(self, ssl = True), context)
+				print "* Listening on", port, "(SSL)"
+		except:
+			print "* SSL Error!"
+
 		# run the reactor (start accepting connections)
 		reactor.run()
 
-		
+
 	def register_hooks(self):
 		"""Finds and registers all command hooks from the correct package."""
 		for module in dir(modules):
@@ -163,7 +166,7 @@ class Server:
 		if len(self.autojoin) > 0:
 			modules.join.handle_event(self, client, [self.autojoin])
 
-			
+
 	def register_server(self, server):
 		self.servers[server.name]
 
