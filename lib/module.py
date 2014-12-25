@@ -21,13 +21,16 @@
 class Module(object):
 
 	def __init__(self, server):
-		self._server = server
+		self.server = server
 
-	def __message_client(self, nick, prefix, command, params):
-		self._server.message_client(nick, prefix, command, params)
 
-	def __message_channel(self, target, prefix, command, params):
-		self._server.message_channel(nick, prefix, command, params)
+	def handle_unreg(self, source, prefix = None, params = None):
+		pass
 
-	def __send_numeric(self, target, prefix, command, params):
-		self._server.numeric(target, prefix, command, params)
+
+	def handle_client(self, source, prefix = None, params = None):
+		pass
+
+
+	def handle_server(self, source, prefix = None, params = None):
+		pass

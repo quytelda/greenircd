@@ -16,16 +16,10 @@ class Server(object):
 
 		self.channels = {}
 
-		self.__command_handlers = {
-			'client' : {},
-			'server' : {},
-			'unreg' : {}
-		}
+		self.__command_handlers = {}
 
 		for mod in mods:
 			self.__load_module(mod)
-
-		print(self.__command_handlers)
 
 
 	def message_client(self, nick, prefix, command, params):
@@ -75,33 +69,33 @@ class Server(object):
 
 		if ' ' in params[-1]:
 			message += ":"
-
 		message += params[-1]
 
 		return message
+
 
 	def handle_message(self, id, message):
 
 		command = _parse_message(message)
 
-		type = None
+		# ignore unknown commands
+		if command['command'] not in self.__command_handlers:
+			print("Received unknown command: %s" % command['command'])
+			return
+
+		handler = self.__command_handlers[command['command']]
+		handle = None
 		if id in self.clients:
 			print("%s (client): %s" % (id, command))
-			type = 'client'
+			handle = handler.handle_client
 		elif id in self.servers:
 			print("%s (server): %s" % (id, command))
-			type = 'server'
+			handle = handler.handle_server
 		else:
 			print("%s (unreg): %s" % (id, command))
-			type = 'unreg'
+			handle = handler.handle_unreg
 
-		self.__handle_command(command, type)
-
-	def __handle_command(self, command, type):
-
-		# TODO: check if handle exists
-		handle = self.__command_handlers[type][command['command']]
-		handle(command['prefix'], command['params'])
+		handle(id, command['prefix'], command['params'])
 
 
 	def __load_module(self, name):
@@ -110,27 +104,16 @@ class Server(object):
 			import inspect
 
 			module = importlib.import_module('.' + name, MODULE_PKG)
-			mod_objects = [x[1] \
+			mod_classes = [x[1] \
 						   for x in inspect.getmembers(module, inspect.isclass) \
-						   if issubclass(x[1], lib.module.Module)]
+						   if (issubclass(x[1], lib.module.Module)) and (x[0] != 'Module')]
 
-			# enumerate handlers
-			isfunction = lambda x: inspect.isfunction(x) or inspect.ismethod(x)
-			for obj in mod_objects:
-				for function in inspect.getmembers(obj, isfunction):
-					elems = function[0].split('_')
-
-					# ignore invalid functions
-					if (elems[0] != "handle") or \
-					   (len(elems) != 3) or \
-					   (elems[1] not in self.__command_handlers):
-						continue
-
-					type = elems[1]
-					cmd = elems[2]
-					self.__command_handlers[type][cmd] = function[1]
+			for cls in mod_classes:
+				obj = cls(self)
+				self.__command_handlers[obj.command] = obj
 
 			print("* Loaded module: %s" % name)
+
 		except ImportError:
 			print("* Failed to load module: %s" % name)
 
@@ -146,6 +129,8 @@ def _parse_message(raw):
 	# prefix
 	if elems[0].startswith(':'):
 		message['prefix'] = elems.pop(0)
+	else:
+		message['prefix'] = None
 
 	# command
 	message['command'] = elems.pop(0).upper()
