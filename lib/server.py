@@ -1,11 +1,14 @@
 import importlib
 
-import lib.module
-from lib.channel import Channel
 import mod
+import lib.module
+from lib import numeric
+from lib.channel import Channel
+
+from lib.error import NoSuchTargetError, NameInUseError
 
 MODULE_PKG = 'mod'
-mods = ['nick']
+mods = ['nick', 'quit']
 
 class Server(object):
 
@@ -22,14 +25,16 @@ class Server(object):
 			self.__load_module(mod)
 
 
-	def message_client(self, nick, prefix, command, params):
+	def message_client(self, nick, prefix, message):
 
-		# TODO: check if nick isn't in the dict
-		message = self.__format_message(prefix, command, params)
-		print(message)
+		if nick not in self.clients:
+			raise NoSuchTargetError
+
+		client = self.clients[nick]
+		client.message(prefix, message)
 
 
-	def message_channel(self, target, prefix, command, params):
+	def message_channel(self, target, command, prefix = None, params = None):
 
 		# TODO: check if channel exists
 		channel = self.channels[target]
@@ -46,22 +51,30 @@ class Server(object):
 				self.message_channel(target, prefix, command, params)
 
 
-	def disconnect_client(self, nick, reason):
+	def disconnect_client(self, nick):
 
 		#TODO: check if nick exists
 
-		client = clients[nick]
+		client = self.clients[nick]
 		client.transport.loseConnection()
 
 		# remove the user from the registration
-		del clients[nick]
+		del self.clients[nick]
 
 
 	def register_client(self, nick, connection):
 
-		#TODO: ensure nick doesn't already exist
-		clients[nick] = connection
+		# nicknames must be unique
+		if nick in self.clients:
+			connection.numeric(self.name, numeric.ERR_NICKNAMEINUSE, nick, ":Nickname already in use")
+			return
 
+		# add to client dict
+		self.clients[nick] = connection
+		connection.name = nick
+
+		# send welcome
+		connection.numeric(self.name, numeric.RPL_WELCOME, nick, ":Welcome to GreenIRCD")
 
 	def __format_message(self, prefix, command, params):
 		message = ":%s %s %s " % \
@@ -74,7 +87,7 @@ class Server(object):
 		return message
 
 
-	def handle_message(self, id, message):
+	def handle_message(self, ctcn, id, message):
 
 		command = _parse_message(message)
 
@@ -84,18 +97,16 @@ class Server(object):
 			return
 
 		handler = self.__command_handlers[command['command']]
-		handle = None
 		if id in self.clients:
 			print("%s (client): %s" % (id, command))
-			handle = handler.handle_client
+			handler.handle_client(id, command)
 		elif id in self.servers:
 			print("%s (server): %s" % (id, command))
-			handle = handler.handle_server
+			handler.handle_server(id, command)
 		else:
 			print("%s (unreg): %s" % (id, command))
-			handle = handler.handle_unreg
+			handler.handle_unreg(ctcn, command)
 
-		handle(id, command['prefix'], command['params'])
 
 
 	def __load_module(self, name):

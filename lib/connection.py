@@ -7,7 +7,7 @@ class Connection(LineReceiver):
 
 	def __init__(self, factory):
 		self.factory = factory
-		self._id = None
+		self.name = None
 
 
 	def connectionMade(self):
@@ -30,16 +30,16 @@ class Connection(LineReceiver):
 
 	def lineReceived(self, data):
 
-		self.factory.server.handle_message(self._id, data)
+		self.factory.server.handle_message(self, self.name, data)
 
 
-	def message(self, msg, prefix = None):
-		"""
-		Sends a message to the client socket, appropriately prefixed and
-		padded with the requisite CR-LF delimiter.
-		"""
-		self.transport.write(":%s %s\r\n" % \
-							 (prefix if (prefix is not None) else self.factory.server.name, msg))
+	def message(self, prefix, message):
+
+		self.transport.write(":%s %s\r\n" % (prefix, message))
+
+
+	def numeric(self, prefix, numeric, nick, message):
+		self.message(prefix, "%03d %s %s" % (numeric, nick, message))
 
 
 class ConnectionFactory(protocol.Factory):

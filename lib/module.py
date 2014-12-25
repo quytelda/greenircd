@@ -24,13 +24,13 @@ class Module(object):
 		self.server = server
 
 
-	def handle_unreg(self, source, prefix = None, params = None):
+	def handle_unreg(self, source, message):
 		pass
 
 
-	def handle_client(self, source, prefix = None, params = None):
+	def handle_client(self, source, message):
 		pass
 
 
-	def handle_server(self, source, prefix = None, params = None):
+	def handle_server(self, source, message):
 		pass

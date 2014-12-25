@@ -25,3 +25,12 @@ class NoSuchTargetError(Exception):
 
 	def __str__(self):
 		return "Unknown target: %s" % self.target
+
+
+class NameInUseError(Exception):
+
+	def __init__(self, name):
+		self.name = name
+
+	def __str__(self):
+		return "Unknown target: %s" % self.name
