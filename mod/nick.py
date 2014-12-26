@@ -17,4 +17,18 @@ class NickMod(Module):
 		try:
 			self.server.register_client(nick, source)
 		except NameInUseError as err:
-			err.ctcn.numeric(self.server.name, numeric.ERR_NICKNAMEINUSE, nick, ":Nickname already in use")
+			err.ctcn.numeric(self.server.name, numeric.ERR_NICKNAMEINUSE, nick, ":Nickname already in use.")
+
+	def handle_client(self, source, message):
+
+		if len(message['params']) < 1:
+			return
+
+		nick = message['params'][0]
+
+		try:
+			self.server.change_nick(source, nick)
+		except NameInUseError as err:
+			err.ctcn.numeric(self.server.name, numeric.ERR_NICKNAMEINUSE, nick, ":Nickname already in use.")
+		except NoSuchTargetError as err:
+			err.ctcn.numeric(self.server.name, numeric.ERR_NOSUCHNICK, nick, ":No such nickname.")

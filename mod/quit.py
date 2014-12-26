@@ -8,6 +8,7 @@ class QuitMod(Module):
 
 		# nothing has been registered with the server yet
 		# so we can just go ahead and kill the connection
+		print("Unregistered client QUIT")
 		source.transport.loseConnection()
 
 	def handle_client(self, source, message):

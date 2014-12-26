@@ -8,7 +8,7 @@ from lib.channel import Channel
 from lib.error import NoSuchTargetError, NameInUseError
 
 MODULE_PKG = 'mod'
-mods = ['nick', 'quit']
+mods = ['nick', 'quit', 'privmsg']
 
 class Server(object):
 
@@ -80,15 +80,21 @@ class Server(object):
 		# send welcome
 		self.numeric_message_client(self.name, numeric.RPL_WELCOME, nick, ":Welcome to GreenIRCD")
 
-	def __format_message(self, prefix, command, params):
-		message = ":%s %s %s " % \
-				  (prefix, command, ' '.join(params[ : -1]))
 
-		if ' ' in params[-1]:
-			message += ":"
-		message += params[-1]
+	def change_nick(self, old_nick, new_nick):
 
-		return message
+		if old_nick not in self.clients:
+			raise NoSuchTargetError(nick)
+
+		if new_nick in self.clients:
+			raise NameInUseError(nick)
+
+		# swap
+		ctcn = self.clients[old_nick]
+		del self.clients[old_nick]
+		self.clients[new_nick] = ctcn
+
+		ctcn.name = new_nick
 
 
 	def handle_message(self, ctcn, id, message):
@@ -155,7 +161,7 @@ def _parse_message(raw):
 
 	for i in range(0, len(elems)):
 		if elems[i].startswith(':'):
-			message['params'].append(' '.join(elems[i:]))
+			message['params'].append(' '.join(elems[i:])[1:])
 			break
 
 		message['params'].append(elems[i])
