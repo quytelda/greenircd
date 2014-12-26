@@ -29,8 +29,9 @@ class NoSuchTargetError(Exception):
 
 class NameInUseError(Exception):
 
-	def __init__(self, name):
+	def __init__(self, name, ctcn = None):
 		self.name = name
+		self.ctcn = ctcn
 
 	def __str__(self):
 		return "Unknown target: %s" % self.name

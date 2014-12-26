@@ -28,10 +28,14 @@ class Server(object):
 	def message_client(self, nick, prefix, message):
 
 		if nick not in self.clients:
-			raise NoSuchTargetError
+			raise NoSuchTargetError(nick)
 
 		client = self.clients[nick]
 		client.message(prefix, message)
+
+
+	def numeric_message_client(self, prefix, numeric, nick, message):
+		self.message_client(nick, prefix, "%03d %s %s" % (numeric, nick, message))
 
 
 	def message_channel(self, target, command, prefix = None, params = None):
@@ -45,7 +49,7 @@ class Server(object):
 
 	def message_common(self, nick, prefix, command, params):
 
-		#TODO: check if nickname exists
+		# TODO: check if nickname exists
 		for target in self.channels:
 			if nick in channels[target]:
 				self.message_channel(target, prefix, command, params)
@@ -53,7 +57,8 @@ class Server(object):
 
 	def disconnect_client(self, nick):
 
-		#TODO: check if nick exists
+		if nick not in self.clients:
+			raise NoSuchTargetError(nick)
 
 		client = self.clients[nick]
 		client.transport.loseConnection()
@@ -66,15 +71,14 @@ class Server(object):
 
 		# nicknames must be unique
 		if nick in self.clients:
-			connection.numeric(self.name, numeric.ERR_NICKNAMEINUSE, nick, ":Nickname already in use")
-			return
+			raise NameInUseError(nick, connection)
 
 		# add to client dict
 		self.clients[nick] = connection
 		connection.name = nick
 
 		# send welcome
-		connection.numeric(self.name, numeric.RPL_WELCOME, nick, ":Welcome to GreenIRCD")
+		self.numeric_message_client(self.name, numeric.RPL_WELCOME, nick, ":Welcome to GreenIRCD")
 
 	def __format_message(self, prefix, command, params):
 		message = ":%s %s %s " % \
