@@ -84,10 +84,10 @@ class Server(object):
 	def change_nick(self, old_nick, new_nick):
 
 		if old_nick not in self.clients:
-			raise NoSuchTargetError(nick)
+			raise NoSuchTargetError(old_nick)
 
 		if new_nick in self.clients:
-			raise NameInUseError(nick)
+			raise NameInUseError(new_nick)
 
 		# swap
 		ctcn = self.clients[old_nick]
