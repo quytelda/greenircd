@@ -8,7 +8,7 @@ from lib.channel import Channel
 from lib.error import NoSuchTargetError, NameInUseError
 
 MODULE_PKG = 'mod'
-mods = ['nick', 'quit', 'privmsg']
+mods = ['nick', 'quit', 'privmsg', 'kill']
 
 class Server(object):
 
@@ -117,6 +117,14 @@ class Server(object):
 			print("%s (unreg): %s" % (id, command))
 			handler.handle_unreg(ctcn, command)
 
+
+	def generate_client_event(self, target, message):
+
+		if target not in self.clients:
+			raise NoSuchTargetError(target)
+
+		handler = self.__command_handlers[message['command']]
+		handler.handle_client(target, message)
 
 
 	def __load_module(self, name):
