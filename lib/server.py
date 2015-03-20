@@ -26,6 +26,9 @@ class Server(object):
 
 
 	def message_client(self, nick, prefix, message):
+		"""
+		Send a message to the client with this nickname.
+		"""
 
 		if nick not in self.clients:
 			raise NoSuchTargetError(nick)
@@ -35,10 +38,16 @@ class Server(object):
 
 
 	def numeric_message_client(self, prefix, numeric, nick, message):
+		"""
+		Send a numeric message to the client with this nickname.
+		"""
 		self.message_client(nick, prefix, "%03d %s %s" % (numeric, nick, message))
 
 
 	def message_channel(self, target, command, prefix = None, params = None):
+		"""
+		Send a message to every client in the channel `target`.
+		"""
 
 		# TODO: check if channel exists
 		channel = self.channels[target]
@@ -48,14 +57,26 @@ class Server(object):
 
 
 	def message_common(self, nick, prefix, command, params):
+		"""
+		Send a message to every client that has joined at least
+		one channel in common with `nick`.
 
-		# TODO: check if nickname exists
+		BUG: joining > 1 common channel results in duplicate messages
+		TODO: filter duplicates
+		"""
+
+		if nick not in self.clients:
+			raise NoSuchTargetError(nick)
+
 		for target in self.channels:
 			if nick in channels[target]:
 				self.message_channel(target, prefix, command, params)
 
 
 	def disconnect_client(self, nick):
+		"""
+		Remove a client from the server's client list, then terminate the connection.
+		"""
 
 		if nick not in self.clients:
 			raise NoSuchTargetError(nick)
@@ -68,6 +89,10 @@ class Server(object):
 
 
 	def register_client(self, nick, connection):
+		"""
+		Add a client to the server's registered client list,
+		then send welcome information.
+		"""
 
 		# nicknames must be unique
 		if nick in self.clients:
@@ -82,6 +107,9 @@ class Server(object):
 
 
 	def change_nick(self, old_nick, new_nick):
+		"""
+		Attempt to change a client's unique nickname.
+		"""
 
 		if old_nick not in self.clients:
 			raise NoSuchTargetError(old_nick)
@@ -119,6 +147,10 @@ class Server(object):
 
 
 	def generate_client_event(self, target, message):
+		"""
+		Generate and execute an event as if it had been issued
+		by the client with the given nickname.
+		"""
 
 		if target not in self.clients:
 			raise NoSuchTargetError(target)
