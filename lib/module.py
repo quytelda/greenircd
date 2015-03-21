@@ -1,7 +1,7 @@
 #
 # module.py
 #
-# Copyright (C) 2014 Quytelda Gaiwin <admin@tamalin.org>
+# Copyright (C) 2015 Quytelda Kahja <quytelda@tamalin.org>
 #
 # This file is part of GreenIRCd, the python IRC daemon.
 #
