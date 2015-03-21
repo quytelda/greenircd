@@ -8,7 +8,7 @@ from lib.channel import Channel
 from lib.error import NoSuchTargetError, NameInUseError
 
 MODULE_PKG = 'mod'
-mods = ['nick', 'quit', 'privmsg', 'kill']
+mods = ['nick', 'quit', 'privmsg', 'kill', 'ping', 'notice']
 
 class Server(object):
 
