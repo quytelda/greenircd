@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 #
 # main.py - Primary entry point for GreenIRCd software

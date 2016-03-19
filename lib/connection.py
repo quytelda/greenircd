@@ -11,7 +11,6 @@ class Connection(LineReceiver):
 
 
 	def connectionMade(self):
-
 		# resolve peer connection details
 		self.host = self.transport.getPeer().host
 
@@ -24,18 +23,16 @@ class Connection(LineReceiver):
 
 
 	def connectionLost(self, reason):
-
 		print("Connection lost from %s." % self.host)
 
 
 	def lineReceived(self, data):
-
-		self.factory.server.handle_message(self, self.name, data)
+		self.factory.server.handle_message(self, self.name, data.decode())
 
 
 	def message(self, prefix, message):
-
-		self.transport.write(":%s %s\r\n" % (prefix, message))
+		data = ":%s %s\r\n" % (prefix, message)
+		self.transport.write(data.encode())
 
 
 	def numeric(self, prefix, numeric, nick, message):
