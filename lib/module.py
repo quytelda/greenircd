@@ -18,6 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with GreenIRCd.  If not, see <http://www.gnu.org/licenses/>.
 
+def min_params(num):
+	"""
+	A python decorator that checks whether enough arguments were passed
+	to run the command handler.
+	"""
+	def min_params_decorator(handler):
+		def wrapper(self, source, message):
+			if len(message['params']) >= num: handler(self, source, message)
+		return wrapper
+	return min_params_decorator
+
 class Module(object):
 
 	def __init__(self, server):

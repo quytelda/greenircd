@@ -1,9 +1,9 @@
+from lib import module
 from lib import numeric
-from lib.module import Module
 
 from lib.error import NameInUseError, NoSuchTargetError
 
-class PingMod(Module):
+class PingMod(module.Module):
 
 	command = "PING"
 

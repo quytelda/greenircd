@@ -1,6 +1,6 @@
-from lib.module import Module
+from lib import module
 
-class QuitMod(Module):
+class QuitMod(module.Module):
 
 	command = "QUIT"
 
@@ -12,7 +12,6 @@ class QuitMod(Module):
 		source.transport.loseConnection()
 
 	def handle_client(self, source, message):
-
 		reason = ""
 		if len(message['params']) > 0:
 			reason = message['params'][0]
