@@ -29,6 +29,7 @@ from lib.server import Server
 def arg_matches(arg, short, long = None):
 	return (arg == short) or (arg == long)
 
+VERSION = "0.1"
 
 def main(argv):
 	"""
@@ -37,6 +38,7 @@ def main(argv):
 	Primary entry point function; initializes and starts the program.
 	"""
 
+	print(":: Starting greenircd %s..." % (VERSION,))
 	server = Server('greenircd')
 	factory = ConnectionFactory(server)
 	reactor.listenTCP(6667, factory)

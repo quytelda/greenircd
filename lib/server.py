@@ -98,11 +98,11 @@ class Server(object):
 		if nick in self.clients:
 			raise NameInUseError(nick, connection)
 
-		# add to client dict
+		# add to clients table
 		self.clients[nick] = connection
 		connection.name = nick
 
-		# send welcome
+		# send welcome message
 		self.numeric_message_client(self.name, numeric.RPL_WELCOME, nick, ":Welcome to GreenIRCD")
 
 
@@ -127,7 +127,7 @@ class Server(object):
 
 	def handle_message(self, ctcn, id, message):
 
-		command = _parse_message(message)
+		command = parse_message(message)
 
 		# ignore unknown commands
 		if command['command'] not in self.__command_handlers:
@@ -173,23 +173,23 @@ class Server(object):
 				obj = cls(self)
 				self.__command_handlers[obj.command] = obj
 
-			print("* Loaded module: %s" % name)
+			print("  * Loaded module: %s" % name)
 
 		except ImportError:
-			print("* Failed to load module: %s" % name)
+			print("  * Failed to load module: %s" % name)
 
 
-def _parse_message(raw):
+def parse_message(raw):
 
 	message = {}
 	elems = raw.strip().split(' ')
 
-	if len(raw) == 0:
+	if not elems:
 		return None
 
 	# prefix
 	if elems[0].startswith(':'):
-		message['prefix'] = elems.pop(0)
+		message['prefix'] = elems.pop(0)[1:]
 	else:
 		message['prefix'] = None
 
